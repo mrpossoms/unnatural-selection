@@ -1,0 +1,19 @@
+location: gitman_sources
+sources:
+  - name: g.h
+    type: git
+    repo: git@github.com:mrpossoms/g.h.git
+    sparse_paths:
+      -
+    rev: main
+    link: deps/g.h 
+    # Use scripts to run shell commands after the repo is checked out.
+    # This can include build processes
+    scripts:
+      - make static
+sources_locked:
+  - 
+default_group: ''
+groups:
+  -
+
