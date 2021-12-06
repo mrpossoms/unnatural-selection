@@ -1,4 +1,8 @@
+#pragma once
+#include <algorithm>
+
 #include <g.h>
+#include "constants.hpp"
 
 namespace us
 {
@@ -14,7 +18,24 @@ struct cell
 	unsigned lymph_node_hp = 0;
 	bool has_spawner = false;
 	bool is_floor = false;
-	std::unordered_map<unsigned, float> node_distances;
+	std::unordered_map<unsigned, float> node_distances = {};
+};
+
+std::vector<std::vector<cell>> cells;
+std::vector<vec<2, unsigned>> spawn_points;
+std::vector<vec<2, unsigned>> lymph_nodes;
+
+const vec<2, int> offsets[8] = {
+	{-1, -1},
+	{ 0, -1},
+	{ 1, -1},
+
+	{-1,  0},
+	{ 1,  0},
+
+	{-1, 1},
+	{ 0, 1},
+	{ 1, 1},
 };
 
 level() = default;
@@ -26,29 +47,36 @@ level(const texture& base)
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ibo);
 
 	// build the level datastructure
-	for (unsigned r = 0; r < base.size[0]; r++)
+	for (unsigned y = 0; y < base.size[1]; y++)
 	{
-		cells.push_back({});
+		std::vector<cell> row;
 
-		for (unsigned c = 0; c < base.size[1]; c++)
+		for (unsigned x = 0; x < base.size[0]; x++)
 		{
-			unsigned char* pixel = base.sample(c, r);
-			uint8_t r = pixel[0];
-			uint8_t g = pixel[1];
-			uint8_t b = pixel[2];
+			unsigned char* pixel = base.sample(x, y);
+			uint8_t red   = pixel[0];
+			uint8_t green = pixel[1];
+			uint8_t blue  = pixel[2];
 			cell grid_cell;
 
-			if (r == 0xff) { grid_cell.is_floor = true; }
-			if (g == 0xff) { grid_cell.lymph_node_hp = 100; /* TODO */ }
-			if (b == 0xff) { grid_cell.has_spawner = true; }
+			if (red == 0xff) { grid_cell.is_floor = true; }
+			if (green == 0xff) { grid_cell.lymph_node_hp = LYMPH_NODE_HP; }
+			if (blue == 0xff) { grid_cell.has_spawner = true; }
 
 			if (grid_cell.has_spawner)
 			{
-				spawn_points.push_back({r, c});
+				spawn_points.push_back({y, x});
 			}
 
-			cells[r].push_back(grid_cell);
+			if (grid_cell.lymph_node_hp > 0)
+			{
+				lymph_nodes.push_back({y, x});
+			}
+
+			row.push_back(grid_cell);
 		}
+
+		cells.push_back(row);
 	}
 
 	// build nav-grid
@@ -63,39 +91,75 @@ level(const texture& base)
 	}
 }
 
+void for_each_neighbor(
+	int r, int c, 
+	std::function<void(cell& cell, unsigned r, unsigned c)> cb)
+{
+	for (unsigned i = 0; i < sizeof(offsets) / sizeof(offsets[0]); i++)
+	{
+		auto ri = r + offsets[i][0];
+		auto ci = c + offsets[i][1];
+
+		if (ri < 0 || ri >= height()) { continue; }
+		if (ci < 0 || ci >= width()) { continue; }
+
+		cb(cells[ri][ci], ri, ci);
+	}
+}
+
 void build_nav_grid(int x, int y, int last_x, int last_y, unsigned node_id)
 {
 	if (x < 0 || y < 0 || x >= width() || y >= height()) { return; }
+	if (!cells[x][y].is_floor) { return; }
 
-	auto itr = cells[y][x].node_distances.find(node_id);
-	if (cells[y][x].node_distances.end() != itr) { return; }
+	auto itr = cells[x][y].node_distances.find(node_id);
+	if (cells[x][y].node_distances.end() != itr) { return; }
 
 	// TODO: if id is added, escape
 
 	auto dx = x - last_x;
 	auto dy = y - last_y;
 
-	cells[y][x].node_distances[node_id] = cells[last_y][last_x].node_distances[node_id] + sqrtf(dx * dx + dy * dy);
+	float dist = cells[last_x][last_y].node_distances[node_id];
+	for_each_neighbor(x, y, [&](cell& cell, unsigned r, unsigned c) {
+		auto itr = cell.node_distances.find(node_id);
+		if (cell.node_distances.end() != itr)
+		{
+			dist = std::min<float>(cell.node_distances[node_id], dist);
+		}
+	});
 
-	build_nav_grid(x - 1, y - 1, x, y, node_id);
-	build_nav_grid(x - 0, y - 1, x, y, node_id);
-	build_nav_grid(x + 1, y - 1, x, y, node_id);
+	cells[x][y].node_distances[node_id] = dist + sqrtf(dx * dx + dy * dy);
 
-	build_nav_grid(x - 1, y + 0, x, y, node_id);
-	build_nav_grid(x + 1, y + 0, x, y, node_id);
-	
-	build_nav_grid(x - 1, y + 1, x, y, node_id);
-	build_nav_grid(x - 0, y + 1, x, y, node_id);
-	build_nav_grid(x + 1, y + 1, x, y, node_id);
+	for (unsigned i = 0; i < sizeof(offsets) / sizeof(vec<2, int>); i++)
+	{
+		build_nav_grid(x + offsets[i][0], y + offsets[i][1], x, y, node_id);		
+	}
 }
 
 inline unsigned width() const { return cells[0].size(); }
 inline unsigned height() const { return cells.size(); }
+inline unsigned floor_area() const
+{
+	unsigned area = 0;
+	for (auto& row : cells)
+	{
+		for (auto& col : row)
+		{
+			area += col.is_floor;
+		}
+	}
 
-private:
-	std::vector<std::vector<cell>> cells;
-	std::vector<vec<2, unsigned>> spawn_points;
-	std::vector<vec<2, unsigned>> lymph_nodes;
+	return area;
+}
+
+std::string info() const
+{
+	std::string str = "(" + std::to_string(width()) + ", " + std::to_string(height()) + ")\n";
+	str += "floor area: " + std::to_string(floor_area()) + "\n";
+	str += "lymph_nodes: " + std::to_string(lymph_nodes.size()) + "\n";
+	return str;
+}
 
 };
 

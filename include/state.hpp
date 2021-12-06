@@ -5,7 +5,7 @@ namespace us
 
 struct state
 {
-	us::level level; 
+	std::shared_ptr<us::level> level; 
 };
 
 } // namespace us

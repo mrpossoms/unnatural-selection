@@ -17,6 +17,13 @@ if(POLICY CMP0072)
   set(OpenGL_GL_PREFERENCE GLVND)
 endif()
 
+set(CMAKE_C_FLAGS_DEBUG "${CMAKE_C_FLAGS} -Wall -g -O0")
+set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS} -Wall -g -O0")
+
+set(CMAKE_C_FLAGS_RELEASE "${CMAKE_C_FLAGS} -Wall -O3")
+set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS} -Wall -O3")
+
+
 # specify the C++ standard
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED True)
@@ -36,6 +43,7 @@ include_directories(${PROJECT_NAME} PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/gitman_s
 # include_directories(${PROJECT_NAME} PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/gitman_sources/g.h/gitman_sources/xmath.h/inc)
 
 find_package(OpenGL REQUIRED)
+find_package(OpenAL REQUIRED)
 
 add_executable(${PROJECT_NAME} ${SOURCE})
 
@@ -44,6 +52,9 @@ add_subdirectory(gitman_sources/g.h)
 target_link_libraries(${PROJECT_NAME} g)
 target_link_libraries(${PROJECT_NAME} glfw)
 target_link_libraries(${PROJECT_NAME} OpenGL::GL)
+# target_link_libraries(${PROJECT_NAME} OpenAL::AL)
+target_link_libraries(${PROJECT_NAME} ${OPENAL_LIBRARY})
+message("openal: ${OPENAL_LIBRARY}")
 
 if (WIN32)
 message(STATUS ">>> Will copy data directory")

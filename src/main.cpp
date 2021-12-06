@@ -5,6 +5,7 @@
 struct unnatural_selection : public g::core
 {
 
+g::asset::store assets;
 us::state state;
 
 unnatural_selection() = default;
@@ -12,6 +13,19 @@ unnatural_selection() = default;
 
 virtual bool initialize()
 {
+	state.level = std::make_shared<us::level>(assets.tex("Level.png"));
+
+	std::cerr << state.level->info() << std::endl;
+
+	std::cerr << "Distances" << std::endl;
+	auto& spawn = state.level->spawn_points[0];
+	auto& distances = state.level->cells[spawn[0]][spawn[1]].node_distances;
+
+	for (auto kvp : distances)
+	{
+		std::cerr << "node_id: " << kvp.first << " dist: " << distances[kvp.first] << std::endl;
+	}
+
 	return true;
 }
 
