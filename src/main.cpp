@@ -1,8 +1,14 @@
 #include "g.h"
+#include "state.hpp"
 
 
 struct unnatural_selection : public g::core
 {
+
+us::state state;
+
+unnatural_selection() = default;
+~unnatural_selection() = default;
 
 virtual bool initialize()
 {
