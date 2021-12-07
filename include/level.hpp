@@ -10,67 +10,71 @@ namespace us
 using namespace g::gfx;
 using namespace xmath;
 
-struct level : public mesh<vertex::pos_uv_norm>
+struct level
 {
 
 struct cell
 {
+	unsigned r = 0, c = 0;
 	unsigned lymph_node_hp = 0;
 	bool has_spawner = false;
 	bool is_floor = false;
+	bool wall_start = false;
+	int wall_id = -1;
+	cell* wall_next = nullptr;
 	std::unordered_map<unsigned, float> node_distances = {};
 };
 
 std::vector<std::vector<cell>> cells;
 std::vector<vec<2, unsigned>> spawn_points;
 std::vector<vec<2, unsigned>> lymph_nodes;
+std::unordered_map<unsigned, cell*> walls;
+unsigned hash = 0;
 
-const vec<2, int> offsets[8] = {
-	{-1, -1},
-	{ 0, -1},
-	{ 1, -1},
-
-	{-1,  0},
-	{ 1,  0},
-
-	{-1, 1},
-	{ 0, 1},
-	{ 1, 1},
-};
+// const vec<2, int> offsets[8] = {
+// 	{-1, -1},
+// 	{ 0, -1},
+// 	{ 1, -1},
+// 	{ 1,  0},
+// 	{ 1,  1},
+// 	{ 0,  1},
+// 	{ 1,  1},
+// 	{-1,  0},
+// };
 
 level() = default;
 
 level(const texture& base)
 {
-	glGenBuffers(2, &vbo);
-	glBindBuffer(GL_ARRAY_BUFFER, vbo);
-	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ibo);
-
 	// build the level datastructure
-	for (unsigned y = 0; y < base.size[1]; y++)
+	for (unsigned r = 0; r < base.size[1]; r++)
 	{
 		std::vector<cell> row;
 
-		for (unsigned x = 0; x < base.size[0]; x++)
+		for (unsigned c = 0; c < base.size[0]; c++)
 		{
-			unsigned char* pixel = base.sample(x, y);
+			unsigned char* pixel = base.sample(c, r);
 			uint8_t red   = pixel[0];
 			uint8_t green = pixel[1];
 			uint8_t blue  = pixel[2];
 			cell grid_cell;
+			grid_cell.r = r;
+			grid_cell.c = c;
 
 			if (red == 0xff) { grid_cell.is_floor = true; }
 			if (green == 0xff) { grid_cell.lymph_node_hp = LYMPH_NODE_HP; }
 			if (blue == 0xff) { grid_cell.has_spawner = true; }
 
+			hash += (red << 16 | green << 8 | blue);
+
 			if (grid_cell.has_spawner)
 			{
-				spawn_points.push_back({y, x});
+				spawn_points.push_back({r, c});
 			}
 
 			if (grid_cell.lymph_node_hp > 0)
 			{
-				lymph_nodes.push_back({y, x});
+				lymph_nodes.push_back({r, c});
 			}
 
 			row.push_back(grid_cell);
@@ -89,22 +93,160 @@ level(const texture& base)
 			i++;
 		}
 	}
+
+	// assign wall ids
+	unsigned wall_count = 0;
+	for (unsigned r = 0; r < base.size[1]; r++)
+	{
+		for (unsigned c = 0; c < base.size[0]; c++)
+		{
+			if (is_boundary(r, c) > 2 && cells[r][c].wall_id == -1)
+			{
+				walls[wall_count] = &cells[r][c];
+				cells[r][c].wall_start = true;
+				build_wall(r, c, wall_count);
+				wall_count++;
+			}
+		}
+	}
+
+	for (unsigned r = 0; r < base.size[1]; r++)
+	{
+		std::string row = "";
+		for (unsigned c = 0; c < base.size[0]; c++)
+		{
+			if (cells[r][c].is_floor)
+			{
+				if (cells[r][c].lymph_node_hp > 0)
+				{
+					row += "N";
+				}
+				else if (cells[r][c].has_spawner)
+				{
+					row += "S";
+				}
+				else
+				{
+					row += " ";
+				}
+			}
+			else
+			{
+				if (cells[r][c].wall_next)
+				{
+					row += std::to_string(cells[r][c].wall_id);
+				}
+				else if (r == 0 && c == 0)
+				{
+					row += "0";
+				}
+				else if (c == width()-1)
+				{
+					row += "r";
+				}
+				else
+				{
+					row += ".";
+				}
+			}
+		}
+
+		std::cerr << row << std::endl;
+	}
+}
+
+void build_wall(unsigned r, unsigned c, int id, int depth=0)
+{
+	cells[r][c].wall_id = id;
+
+	unsigned best_bound = 0;
+	int br = 0, bc = 0;
+	cell* best = nullptr;
+
+	for_each_neighbor(r, c, [&](cell& neighbor, unsigned nr, unsigned nc) -> bool {
+		auto bound = is_boundary(nr, nc);
+
+		if (best_bound < bound && neighbor.wall_id == -1 || (neighbor.wall_start && depth > 2))
+		{
+			best_bound = bound;
+			best = &neighbor;
+			// br = nr;
+			// bc = nc;
+			// return true;
+		}
+	});
+
+	if (best)
+	{
+		cells[r][c].wall_next = best;
+
+		if (best->wall_id == -1)
+		{
+			build_wall(best->r, best->c, id, depth + 1);
+		}
+		else
+		{
+			// cells[r][c].wall_next = &neighbor;
+			if (best->wall_start) { std::cerr << best->r << "," << best->c << " reached start" << std::endl; }
+		}		
+	}
+}
+
+unsigned is_boundary(unsigned r, unsigned c)
+{
+	if (cells[r][c].is_floor) { return false; }
+
+	int count = 0;
+	for_each_neighbor(r, c, [&](cell& neighbor, unsigned r, unsigned c) -> bool {
+		// if (neighbor.is_floor) { boundary = true; }
+		count += neighbor.is_floor;
+	});
+
+	return count;
 }
 
 void for_each_neighbor(
 	int r, int c, 
-	std::function<void(cell& cell, unsigned r, unsigned c)> cb)
+	std::function<bool(cell& cell, unsigned r, unsigned c)> cb)
 {
-	for (unsigned i = 0; i < sizeof(offsets) / sizeof(offsets[0]); i++)
-	{
-		auto ri = r + offsets[i][0];
-		auto ci = c + offsets[i][1];
+	int dr = 0, dc = 0;
 
+	for (dr = -1; dr <= 1; dr++)
+	for (dc = -1; dc <= 1; dc++)
+	{
+		if (dr == 0 && dc == 0) { continue; }
+
+		auto ri = r + dr;
+		auto ci = c + dc;
 		if (ri < 0 || ri >= height()) { continue; }
 		if (ci < 0 || ci >= width()) { continue; }
 
-		cb(cells[ri][ci], ri, ci);
+		if (cb(cells[ri][ci], ri, ci)) { break; }
 	}
+
+
+	// int offsets[8][2] = {
+	// 	{ -1, -1 },
+	// 	{ -1,  1 },
+	// 	{  1,  1 },
+	// 	{  1, -1 },
+
+	// 	{  0, -1 },
+	// 	{  1,  0 },
+	// 	{  0,  1 },
+	// 	{ -1,  0 },
+	// };
+
+	// for (unsigned i = 0; i < 8; i++)
+	// {
+	// 	auto ri = r + offsets[i][0];
+	// 	auto ci = c + offsets[i][1];
+
+	// 	if (ri < 0 || ri >= height()) { continue; }
+	// 	if (ci < 0 || ci >= width()) { continue; }
+
+	// 	if (cb(cells[ri][ci], ri, ci)) { break; }
+	// }
 }
 
 void build_nav_grid(int x, int y, int last_x, int last_y, unsigned node_id)
@@ -121,7 +263,7 @@ void build_nav_grid(int x, int y, int last_x, int last_y, unsigned node_id)
 	auto dy = y - last_y;
 
 	float dist = cells[last_x][last_y].node_distances[node_id];
-	for_each_neighbor(x, y, [&](cell& cell, unsigned r, unsigned c) {
+	for_each_neighbor(x, y, [&](cell& cell, unsigned r, unsigned c) -> bool {
 		auto itr = cell.node_distances.find(node_id);
 		if (cell.node_distances.end() != itr)
 		{
@@ -131,10 +273,14 @@ void build_nav_grid(int x, int y, int last_x, int last_y, unsigned node_id)
 
 	cells[x][y].node_distances[node_id] = dist + sqrtf(dx * dx + dy * dy);
 
-	for (unsigned i = 0; i < sizeof(offsets) / sizeof(vec<2, int>); i++)
-	{
-		build_nav_grid(x + offsets[i][0], y + offsets[i][1], x, y, node_id);		
-	}
+	for_each_neighbor(x, y, [&](cell& cell, unsigned r, unsigned c) -> bool {
+		build_nav_grid(r, c, x, y, node_id);
+	});
+
+	// for (unsigned i = 0; i < sizeof(offsets) / sizeof(vec<2, int>); i++)
+	// {
+	// 	build_nav_grid(x + offsets[i][0], y + offsets[i][1], x, y, node_id);		
+	// }
 }
 
 inline unsigned width() const { return cells[0].size(); }
