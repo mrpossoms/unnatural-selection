@@ -283,6 +283,14 @@ void build_nav_grid(int x, int y, int last_x, int last_y, unsigned node_id)
 	// }
 }
 
+cell& operator[](const vec<3>& p)
+{
+	int r = std::max<int>(std::min<int>(height(), (int)p[2]), 0);
+	int c = std::max<int>(std::min<int>(width(), (int)p[0]), 0);
+
+	return cells[r][c];
+}
+
 inline unsigned width() const { return cells[0].size(); }
 inline unsigned height() const { return cells.size(); }
 inline unsigned floor_area() const

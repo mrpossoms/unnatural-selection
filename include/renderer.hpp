@@ -34,20 +34,23 @@ struct renderer
 				auto next = curr->wall_next;
 				uint32_t n = vertices.size();
 
-				vertices.push_back({{ (float)curr->r, 0, (float)curr->c }, {1, 1}, {1, 0, 0}});
-		        vertices.push_back({{ (float)next->r, 0, (float)next->c }, {0, 1}, {1, 0, 0}});
-		        vertices.push_back({{ (float)next->r, ceiling, (float)next->c }, {0, 0}, {1, 0, 0}});
-		        vertices.push_back({{ (float)curr->r, ceiling, (float)curr->c }, {1, 0}, {1, 0, 0}});
+				auto forward = vec<3>{ (float)(next->r - curr->r), 0, (float)(next->c - curr->c) };
+				auto normal = vec<3>::cross(forward, {0, 1, 0}).unit();
+
+				vertices.push_back({{ (float)curr->r, 0, (float)curr->c }, {1, 1}, normal});
+		        vertices.push_back({{ (float)next->r, 0, (float)next->c }, {0, 1}, normal});
+		        vertices.push_back({{ (float)next->r, ceiling, (float)next->c }, {0, 0}, normal});
+		        vertices.push_back({{ (float)curr->r, ceiling, (float)curr->c }, {1, 0}, normal});
 
 		        min_corner.take_min({(float)curr->r, (float)curr->c});
 		        max_corner.take_max({(float)curr->r, (float)curr->c});
 
-		        indices.push_back(n + 2);
-		        indices.push_back(n + 3);
-		        indices.push_back(n + 0);
-		        indices.push_back(n + 1);
-		        indices.push_back(n + 2);
-		        indices.push_back(n + 0);
+				indices.push_back(n + 0);
+				indices.push_back(n + 3);
+				indices.push_back(n + 2);
+				indices.push_back(n + 0);
+				indices.push_back(n + 2);
+				indices.push_back(n + 1);
 
 		        curr = next;
 
@@ -74,21 +77,21 @@ struct renderer
 
 			{ // ceiling
 				uint32_t n = vertices.size();
-				vertices.push_back({{ 0, ceiling, 0 }, {w, h}, {0, 1, 0}});
-				vertices.push_back({{ w, ceiling, 0 }, {0, h}, {0, 1, 0}});
-				vertices.push_back({{ w, ceiling, h }, {0, 0}, {0, 1, 0}});
-				vertices.push_back({{ 0, ceiling, h }, {w, 0}, {0, 1, 0}});
+				vertices.push_back({{ 0, ceiling, 0 }, {w, h}, {0, -1, 0}});
+				vertices.push_back({{ w, ceiling, 0 }, {0, h}, {0, -1, 0}});
+				vertices.push_back({{ w, ceiling, h }, {0, 0}, {0, -1, 0}});
+				vertices.push_back({{ 0, ceiling, h }, {w, 0}, {0, -1, 0}});
 
-				indices.push_back(n + 2);
+				indices.push_back(n + 0);
 				indices.push_back(n + 3);
-				indices.push_back(n + 0);
-				indices.push_back(n + 1);
 				indices.push_back(n + 2);
 				indices.push_back(n + 0);
+				indices.push_back(n + 2);
+				indices.push_back(n + 1);
 			}
 		}
 
-		g::gfx::mesh<g::gfx::vertex::pos_uv_norm>::compute_normals(vertices, indices);
+		// g::gfx::mesh<g::gfx::vertex::pos_uv_norm>::compute_normals(vertices, indices);
 
 		level_mesh.set_vertices(vertices);
 		level_mesh.set_indices(indices);

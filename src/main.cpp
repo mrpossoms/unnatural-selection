@@ -24,7 +24,7 @@ virtual bool initialize()
 	auto& spawn = state.level->spawn_points[0];
 	auto& distances = state.level->cells[spawn[0]][spawn[1]].node_distances;
 
-	state.player.position = { state.level->width() / 2.f, 5.f, state.level->height() / 2.f };
+	state.player.position = { (float)state.level->lymph_nodes[0][0], 1.f, (float)state.level->lymph_nodes[0][1] };
 
 	glDisable(GL_CULL_FACE);
 	glPointSize(4);
@@ -40,17 +40,25 @@ virtual bool initialize()
 
 virtual void update(float dt)
 {
-    const auto speed = 4.0f;
-    if (glfwGetKey(g::gfx::GLFW_WIN, GLFW_KEY_W) == GLFW_PRESS) state.player.position += state.player.forward() * dt * speed;
-    if (glfwGetKey(g::gfx::GLFW_WIN, GLFW_KEY_S) == GLFW_PRESS) state.player.position += state.player.forward() * -dt * speed;
-    if (glfwGetKey(g::gfx::GLFW_WIN, GLFW_KEY_A) == GLFW_PRESS) state.player.position += state.player.left() * -dt * speed;
-    if (glfwGetKey(g::gfx::GLFW_WIN, GLFW_KEY_D) == GLFW_PRESS) state.player.position += state.player.left() * dt * speed;
-    if (glfwGetKey(g::gfx::GLFW_WIN, GLFW_KEY_Q) == GLFW_PRESS) state.player.d_roll(-dt);
-    if (glfwGetKey(g::gfx::GLFW_WIN, GLFW_KEY_E) == GLFW_PRESS) state.player.d_roll(dt);
-    if (glfwGetKey(g::gfx::GLFW_WIN, GLFW_KEY_LEFT) == GLFW_PRESS) state.player.d_yaw(-dt);
-    if (glfwGetKey(g::gfx::GLFW_WIN, GLFW_KEY_RIGHT) == GLFW_PRESS) state.player.d_yaw(dt);
-    if (glfwGetKey(g::gfx::GLFW_WIN, GLFW_KEY_UP) == GLFW_PRESS) state.player.d_pitch(dt);
-    if (glfwGetKey(g::gfx::GLFW_WIN, GLFW_KEY_DOWN) == GLFW_PRESS) state.player.d_pitch(-dt);
+    const auto speed = 20.0f;
+ 
+ 	vec<2> dir = {};
+
+    if (glfwGetKey(g::gfx::GLFW_WIN, GLFW_KEY_W) == GLFW_PRESS) dir += { 0, dt};
+    if (glfwGetKey(g::gfx::GLFW_WIN, GLFW_KEY_S) == GLFW_PRESS) dir += { 0,-dt};
+    if (glfwGetKey(g::gfx::GLFW_WIN, GLFW_KEY_A) == GLFW_PRESS) dir += {-dt, 0};
+    if (glfwGetKey(g::gfx::GLFW_WIN, GLFW_KEY_D) == GLFW_PRESS) dir += { dt, 0};
+    // if (glfwGetKey(g::gfx::GLFW_WIN, GLFW_KEY_Q) == GLFW_PRESS) state.player.d_roll(-dt);
+    // if (glfwGetKey(g::gfx::GLFW_WIN, GLFW_KEY_E) == GLFW_PRESS) state.player.d_roll(dt);
+    if (glfwGetKey(g::gfx::GLFW_WIN, GLFW_KEY_LEFT) == GLFW_PRESS) state.player.theta += (-dt);
+    if (glfwGetKey(g::gfx::GLFW_WIN, GLFW_KEY_RIGHT) == GLFW_PRESS) state.player.theta += (dt);
+    if (glfwGetKey(g::gfx::GLFW_WIN, GLFW_KEY_UP) == GLFW_PRESS) state.player.phi += (dt);
+    if (glfwGetKey(g::gfx::GLFW_WIN, GLFW_KEY_DOWN) == GLFW_PRESS) state.player.phi += (-dt);
+    
+    state.player.walk(dir * speed);
+    state.player.update(dt, *state.level);
+
+    state.player.orientation = state.player.get_orientation();
 
 	renderer.draw(assets, state);
 }
