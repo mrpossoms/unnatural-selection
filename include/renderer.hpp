@@ -106,13 +106,15 @@ struct renderer
 		{
 			build_level_mesh(state.level);
 		}
-
+ 
 		glClearColor(0, 0, 0, 1);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 
         level_mesh.using_shader(assets.shader("level.vs+level.fs"))
             ["u_model"].mat4(mat4::I())
+            ["u_floor"].texture(assets.tex("floor_0.repeating.png"))
+            ["u_wall"].texture(assets.tex("Wall_0.repeating.png"))
             .set_camera(state.player)
             // .draw<GL_POINTS>();
             .draw<GL_TRIANGLES>();
