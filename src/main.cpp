@@ -1,6 +1,7 @@
 #include "g.h"
 #include "state.hpp"
 #include "renderer.hpp"
+#include "mechanics.hpp"
 
 struct unnatural_selection : public g::core
 {
@@ -38,6 +39,15 @@ virtual bool initialize()
 }
 
 
+void spawn_projectile(us::state& state, const vec<3>& position, const vec<3>& velocity)
+{
+	us::projectile projectile;
+	projectile.position = position;
+	projectile.velocity = velocity;
+	state.projectiles.push_back(projectile);
+}
+
+
 virtual void update(float dt)
 {
  	vec<2> dir = {};
@@ -55,16 +65,14 @@ virtual void update(float dt)
     if (glfwGetKey(g::gfx::GLFW_WIN, GLFW_KEY_UP) == GLFW_PRESS) state.player.phi += (dt);
     if (glfwGetKey(g::gfx::GLFW_WIN, GLFW_KEY_DOWN) == GLFW_PRESS) state.player.phi += (-dt);
     
+    if (glfwGetKey(g::gfx::GLFW_WIN, GLFW_KEY_SPACE) == GLFW_PRESS) spawn_projectile(state, state.player.position, state.player.forward() + state.player.velocity);
+
+    us::update_projectiles(state, dt);
+
     state.player.walk(dir * PLAYER_SPEED);
     state.player.update(dt, *state.level);
 
     state.player.orientation = state.player.get_orientation();
-
-    // update particles
-    for (auto& projectile : state.projectiles)
-    {
-    	projectile.position += projectile.velocity * dt;
-    }
 
 	renderer.draw(assets, state);
 }

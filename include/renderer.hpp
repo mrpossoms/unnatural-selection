@@ -13,6 +13,8 @@ struct sprite
 	vec<2> frame_dims = {};
 	unsigned frames = 0;
 
+	sprite() = default;
+
 	sprite(const nlohmann::json& json)
 	{
 		for (auto& frame : json["frames"])
@@ -23,6 +25,7 @@ struct sprite
 			frames += 1;
 		}
 	}
+
 };
 
 struct renderer
@@ -127,7 +130,9 @@ struct renderer
 		if (itr == sprites.end())
 		{
 			std::ifstream ifs("data/tex/" + name + ".json");
-			sprites[name + ".json"] = { nlohmann::json::parse(ifs) };
+
+			us::sprite sprite(nlohmann::json::parse(ifs));
+			sprites.insert({name + ".json", sprite});
 		}
 
 		return sprites[name + ".json"];
@@ -161,18 +166,30 @@ struct renderer
             .draw<GL_TRIANGLES>();
 
         // glDisable(GL_DEPTH_TEST);
-        auto virus = get_sprite("virus_3");
+
+        for (auto& projectile : state.projectiles)
+        {
+			billboard_mesh.using_shader(assets.shader("billboard.vs+test_uv.fs"))
+				["u_position"].vec3(projectile.position)
+				// ["u_sprite_sheet"].texture(assets.tex("virus_3.png"))
+				// ["u_frame_dims"].vec2(virus.frame_dims)
+				// ["u_frame"].int1(static_cast<int>((state.time * 10) + (t * 10)) % virus.frames)
+				.set_camera(state.player)
+				.draw<GL_TRIANGLE_FAN>();
+        }
+
         for (float t = 0; t < M_PI * 8; t += 0.1f)
         {
-	        billboard_mesh.using_shader(assets.shader("billboard.vs+animated_sprite.fs"))
-	        	["u_position"].vec3({ (float)state.level->lymph_nodes[0][0] + cos(t) * (t * 10), 2.f, (float)state.level->lymph_nodes[0][1] + sin(t) * (t * 10) })
-	        	["u_sprite_sheet"].texture(assets.tex("virus_3.png"))
-	        	["u_frame_dims"].vec2(virus.frame_dims)
-	        	["u_frame"].int1(static_cast<int>((state.time * 10) + (t * 10)) % virus.frames)
-	            .set_camera(state.player)
-	            // .draw<GL_POINTS>();
-	            .draw<GL_TRIANGLE_FAN>();
-	        // glEnable(GL_DEPTH_TEST);
+        	auto virus = get_sprite("virus_3");
+			billboard_mesh.using_shader(assets.shader("billboard.vs+animated_sprite.fs"))
+				["u_position"].vec3({ (float)state.level->lymph_nodes[0][0] + cos(t) * (t * 10), 2.f, (float)state.level->lymph_nodes[0][1] + sin(t) * (t * 10) })
+				["u_sprite_sheet"].texture(assets.tex("virus_3.png"))
+				["u_frame_dims"].vec2(virus.frame_dims)
+				["u_frame"].int1(static_cast<int>((state.time * 10) + (t * 10)) % virus.frames)
+				.set_camera(state.player)
+				// .draw<GL_POINTS>();
+				.draw<GL_TRIANGLE_FAN>();
+				// glEnable(GL_DEPTH_TEST);
         }
 
 	}

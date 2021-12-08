@@ -10,18 +10,30 @@ struct projectile : public g::dyn::particle
 {
 	enum class type
 	{
-		bullet,
-		laster,
+		bullet = 0,
+		laser,
 		rocket
 	};
 
 	projectile::type type;
+	float life = 10;
+
+	projectile() = default;
 };
+
+
+// struct weapon
+// {
+// 	float cool_down
+// }
+
 
 struct player : public g::game::camera_perspective
 {
 	float theta = 0;
 	float phi = 0;
+
+	unsigned selected_weapon = 0;
 
 	vec<3> velocity;
 
@@ -65,7 +77,7 @@ struct state
 	std::shared_ptr<us::level> level;
 	us::player player;
 
-	g::bounded_list<g::dyn::particle, 100> projectiles;
+	g::bounded_list<us::projectile, 100> projectiles;
 };
 
 } // namespace us
