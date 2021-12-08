@@ -100,7 +100,7 @@ level(const texture& base)
 	{
 		for (unsigned c = 0; c < base.size[0]; c++)
 		{
-			if (is_boundary(r, c) > 2 && cells[r][c].wall_id == -1)
+			if (is_boundary(r, c) >= 1 && cells[r][c].wall_id == -1)
 			{
 				walls[wall_count] = &cells[r][c];
 				cells[r][c].wall_start = true;

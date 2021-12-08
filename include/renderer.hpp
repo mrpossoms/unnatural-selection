@@ -169,11 +169,11 @@ struct renderer
 
         for (auto& projectile : state.projectiles)
         {
-			billboard_mesh.using_shader(assets.shader("billboard.vs+test_uv.fs"))
+			billboard_mesh.using_shader(assets.shader("billboard.vs+animated_sprite.fs"))
 				["u_position"].vec3(projectile.position)
-				// ["u_sprite_sheet"].texture(assets.tex("virus_3.png"))
-				// ["u_frame_dims"].vec2(virus.frame_dims)
-				// ["u_frame"].int1(static_cast<int>((state.time * 10) + (t * 10)) % virus.frames)
+				["u_sprite_sheet"].texture(assets.tex("bullet_1.png"))
+				["u_frame_dims"].vec2({1, 1})
+				["u_frame"].int1(0)
 				.set_camera(state.player)
 				.draw<GL_TRIANGLE_FAN>();
         }
