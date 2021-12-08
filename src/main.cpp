@@ -24,7 +24,7 @@ virtual bool initialize()
 	auto& spawn = state.level->spawn_points[0];
 	auto& distances = state.level->cells[spawn[0]][spawn[1]].node_distances;
 
-	state.player.position = { (float)state.level->lymph_nodes[0][0], 1.f, (float)state.level->lymph_nodes[0][1] };
+	state.player.position = { (float)state.level->lymph_nodes[0][0], 2.f, (float)state.level->lymph_nodes[0][1] };
 
 	glDisable(GL_CULL_FACE);
 	glPointSize(4);
@@ -40,9 +40,9 @@ virtual bool initialize()
 
 virtual void update(float dt)
 {
-    const auto speed = 20.0f;
- 
  	vec<2> dir = {};
+
+ 	state.time += dt;
 
     if (glfwGetKey(g::gfx::GLFW_WIN, GLFW_KEY_W) == GLFW_PRESS) dir += { 0, dt};
     if (glfwGetKey(g::gfx::GLFW_WIN, GLFW_KEY_S) == GLFW_PRESS) dir += { 0,-dt};
@@ -55,10 +55,16 @@ virtual void update(float dt)
     if (glfwGetKey(g::gfx::GLFW_WIN, GLFW_KEY_UP) == GLFW_PRESS) state.player.phi += (dt);
     if (glfwGetKey(g::gfx::GLFW_WIN, GLFW_KEY_DOWN) == GLFW_PRESS) state.player.phi += (-dt);
     
-    state.player.walk(dir * speed);
+    state.player.walk(dir * PLAYER_SPEED);
     state.player.update(dt, *state.level);
 
     state.player.orientation = state.player.get_orientation();
+
+    // update particles
+    for (auto& projectile : state.projectiles)
+    {
+    	projectile.position += projectile.velocity * dt;
+    }
 
 	renderer.draw(assets, state);
 }

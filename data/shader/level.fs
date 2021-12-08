@@ -18,6 +18,7 @@ void main (void)
 	float wp = 1.f - abs(dot(v_normal, vec3(0, 1, 0)));
 	float fp = abs(dot(v_normal, vec3(0, 1, 0)));
 
+	float fog = min(1.0, 1.0/(0.2 * v_screen_pos.z));
 
-	color = wall_textel * wp + floor_textel * fp;
+	color = (wall_textel * wp + floor_textel * fp) * vec4(vec3(fog), 1.0);
 }

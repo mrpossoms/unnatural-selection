@@ -7,10 +7,12 @@ sources:
       -
     rev: main
     link: deps/g.h 
-    # Use scripts to run shell commands after the repo is checked out.
-    # This can include build processes
-    scripts:
-      - make static
+  - name: json
+    type: git
+    repo: git@github.com:nlohmann/json.git
+    sparse_paths:
+      -
+    rev: v3.10.4
 sources_locked:
   - 
 default_group: ''

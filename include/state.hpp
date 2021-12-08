@@ -6,6 +6,18 @@ using namespace xmath;
 namespace us
 {
 
+struct projectile : public g::dyn::particle
+{
+	enum class type
+	{
+		bullet,
+		laster,
+		rocket
+	};
+
+	projectile::type type;
+};
+
 struct player : public g::game::camera_perspective
 {
 	float theta = 0;
@@ -49,8 +61,11 @@ struct player : public g::game::camera_perspective
 
 struct state
 {
+	float time;
 	std::shared_ptr<us::level> level;
 	us::player player;
+
+	g::bounded_list<g::dyn::particle, 100> projectiles;
 };
 
 } // namespace us
