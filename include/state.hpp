@@ -6,6 +6,8 @@ using namespace xmath;
 namespace us
 {
 
+float randf() { return ((rand() % 2048) / 1024.f) - 1.f; }
+
 struct projectile : public g::dyn::particle
 {
 	enum class type
@@ -29,7 +31,7 @@ struct projectile : public g::dyn::particle
 
 struct baddie : public g::dyn::particle
 {
-
+	int hp = 1;
 };
 
 
