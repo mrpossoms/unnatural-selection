@@ -29,9 +29,23 @@ struct projectile : public g::dyn::particle
 // 	float cool_down
 // }
 
+
+
 struct baddie : public g::dyn::particle
 {
+	struct genome
+	{
+		uint8_t hp;
+		uint8_t speed;
+		uint8_t armor;
+		uint8_t shield;
+		uint8_t damage;
+		uint8_t target_node;
+	};
+
+	genome genes;
 	int hp = 1;
+	float score = 0;
 };
 
 
@@ -70,7 +84,7 @@ struct player : public g::game::camera_perspective
 		{
 			const auto spread = 0.5;
 			p.position = position + forward() * 0.25f;
-			p.velocity = forward() * 10 + (up() * randf() * spread) + (left() * randf() * spread);
+			p.velocity = forward() * 30 + (up() * randf() * spread) + (left() * randf() * spread);
 			p.life = 10;
 			cool_down = 0.1;
 
@@ -87,7 +101,11 @@ struct player : public g::game::camera_perspective
 		if (level.cells[(int)(new_pos[0] + 0.5)][(int)(new_pos[2] + 0.5)].is_floor)
 		{
 			position = new_pos;	
+		
+
 		}
+
+
 
 		cool_down = std::max<float>(0, cool_down - dt);
 

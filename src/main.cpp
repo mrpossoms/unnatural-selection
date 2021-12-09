@@ -37,9 +37,16 @@ virtual bool initialize()
 
 	for (auto& spawn : state.level->spawn_points)
 	{
-		us::baddie baddie;
-		baddie.position = {(float)spawn[0], 1, (float)spawn[1]};
-		state.baddies.push_back(baddie);
+		for (unsigned i = 100; i--;)
+		{
+			us::baddie baddie;
+			baddie.position = {(float)spawn[0] + us::randf(), 1.f + us::randf(), (float)spawn[1] + us::randf()};
+			baddie.genes.damage = 1;
+			baddie.genes.speed = 1 + rand() % 9;
+			baddie.genes.target_node = rand() % state.level->living_lymph_nodes();
+			baddie.hp = 1;
+			state.baddies.push_back(baddie);
+		}
 	}
 
 	return true;

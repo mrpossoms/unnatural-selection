@@ -161,6 +161,17 @@ level(const texture& base)
 	}
 }
 
+unsigned living_lymph_nodes()
+{
+	unsigned living = 0;
+	for (auto& node : lymph_nodes)
+	{
+		living += cells[node[0]][node[1]].lymph_node_hp > 0;
+	}
+
+	return living;
+}
+
 void build_wall(unsigned r, unsigned c, int id, int depth=0)
 {
 	cells[r][c].wall_id = id;

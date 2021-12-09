@@ -166,6 +166,21 @@ struct renderer
 		    // .draw<GL_POINTS>();
 		    .draw<GL_TRIANGLES>();
 
+		// render pustules
+		auto& node_mesh = assets.geo("node.obj");
+		for (auto& lymph_node : state.level->lymph_nodes)
+		{
+			if (state.level->cells[lymph_node[0]][lymph_node[1]].lymph_node_hp > 0)
+			{
+				node_mesh.using_shader(assets.shader("level.vs+model.fs"))
+				    ["u_model"].mat4(mat4::translation(vec<3>{(float)lymph_node[0], 0, (float)lymph_node[1]}))
+				    ["u_texture"].texture(assets.tex("nodeTexture.png"))
+				    .set_camera(state.player)
+				    // .draw<GL_POINTS>();
+				    .draw<GL_TRIANGLES>();
+			}
+		}
+
 		// glDisable(GL_DEPTH_TEST);
 
 		// projectiles
