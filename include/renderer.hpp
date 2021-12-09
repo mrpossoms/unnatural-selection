@@ -12,6 +12,7 @@ struct sprite
 {
 	vec<2> frame_dims = {};
 	unsigned frames = 0;
+	float duration = 0;
 
 	sprite() = default;
 
@@ -21,6 +22,8 @@ struct sprite
 		{
 			float w = frame["sourceSize"]["w"];
 			float sheet_w = json["meta"]["size"]["w"];
+			duration = frame["duration"];
+			duration *= 0.1f;
 			frame_dims = vec<2>{ w / sheet_w, 1 };
 			frames += 1;
 		}
@@ -208,7 +211,7 @@ struct renderer
 				["u_position"].vec3(baddie.position)
 				["u_sprite_sheet"].texture(assets.tex(imgs[i%3]))
 				["u_frame_dims"].vec2(meta.frame_dims)
-				["u_frame"].int1(static_cast<int>((state.time * 10) + (i * 10)) % meta.frames)
+				["u_frame"].int1(static_cast<int>((state.time * meta.duration) + (i * 10)) % meta.frames)
 				.set_camera(state.player)
 				.draw<GL_TRIANGLE_FAN>();
 		}
