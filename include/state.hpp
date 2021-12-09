@@ -10,14 +10,15 @@ float randf() { return ((rand() % 2048) / 1024.f) - 1.f; }
 
 struct projectile : public g::dyn::particle
 {
-	enum class type
+	enum category
 	{
 		bullet = 0,
-		laser,
-		rocket
+		laser = 1,
+		pellet = 2
 	};
 
-	projectile::type type = projectile::type::bullet;
+
+	projectile::category type = projectile::category::bullet;
 	float life = 10;
 
 	projectile() = default;
@@ -44,18 +45,33 @@ struct baddie : public g::dyn::particle
 	};
 
 	genome genes;
-	int hp = 1;
+	float hp = 1;
+	float armor = 0;
+	float shield = 0;
 	float score = 0;
+
+	void take_hit(const projectile& p)
+	{
+		auto base_damage = damage_matrix[(size_t)p.type][2];
+		// auto base_damage = damage_matrix[(size_t)p.type][2];
+	}
 };
 
 
 struct player : public g::game::camera_perspective
 {
+	float speed = PLAYER_SPEED;
+
 	float theta = 0;
 	float phi = 0;
 	float cool_down = 0;
-
 	unsigned selected_weapon = 0;
+
+	float weapon_velocities[3] = { WEAPON_CARBINE_VEL, WEAPON_LASER_VEL, WEAPON_SHOTGUN_VEL };
+	float weapon_cool_downs[3] = { WEAPON_CARBINE_COOLDOWN, WEAPON_LASER_COOLDOWN, WEAPON_SHOTGUN_COOLDOWN };
+	float weapon_spreads[3] = { WEAPON_CARBINE_SPREAD, WEAPON_LASER_SPREAD, WEAPON_SHOTGUN_SPREAD };
+	unsigned weapon_projectiles[3] = { WEAPON_CARBINE_PROJECTILES, WEAPON_LASER_PROJECTILES, WEAPON_SHOTGUN_PROJECTILES };
+
 
 	vec<3> velocity;
 
@@ -78,43 +94,22 @@ struct player : public g::game::camera_perspective
 
 	float randf() { return ((random() % 2048) / 1024.f) - 1.f; }
 
-	bool shoot(projectile& p)
-	{
-		if (cool_down <= 0)
-		{
-			const auto spread = 0.5;
-			p.position = position + forward() * 0.25f;
-			p.velocity = forward() * 30 + (up() * randf() * spread) + (left() * randf() * spread);
-			p.life = 10;
-			cool_down = 0.1;
+	// bool shoot(projectile& p)
+	// {
+	// 	if (cool_down <= 0)
+	// 	{
+	// 		const auto spread = weapon_spreads[selected_weapon];
+	// 		p.type = (us::projectile::type)selected_weapon;
+	// 		p.position = position + forward() * 0.25f;
+	// 		p.velocity = forward() * weapon_velocities[selected_weapon] + (up() * randf() * spread) + (left() * randf() * spread);
+	// 		p.life = 10;
+	// 		cool_down = weapon_cool_downs[selected_weapon];
 
-			return true;
-		}
+	// 		return true;
+	// 	}
 
-		return false;
-	}
-
-	void update(float dt, const us::level& level)
-	{
-		auto new_pos = position + velocity * dt;
-
-		if (level.cells[(int)(new_pos[0] + 0.5)][(int)(new_pos[2] + 0.5)].is_floor)
-		{
-			position = new_pos;	
-		
-
-		}
-
-
-
-		cool_down = std::max<float>(0, cool_down - dt);
-
-		// position += velocity * dt;
-		velocity *= 0.9f;
-
-		phi = std::max<float>(-M_PI / 4, phi);
-		phi = std::min<float>( M_PI / 4, phi);
-	}
+	// 	return false;
+	// }
 };
 
 struct state

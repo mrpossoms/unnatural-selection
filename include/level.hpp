@@ -161,12 +161,13 @@ level(const texture& base)
 	}
 }
 
-unsigned living_lymph_nodes()
+std::vector<unsigned> living_lymph_nodes()
 {
-	unsigned living = 0;
-	for (auto& node : lymph_nodes)
+	std::vector<unsigned> living;
+
+	for (unsigned i = 0; i < lymph_nodes.size(); i++)
 	{
-		living += cells[node[0]][node[1]].lymph_node_hp > 0;
+		if (cells[lymph_nodes[i][0]][lymph_nodes[i][1]].lymph_node_hp > 0) { living.push_back(i); }
 	}
 
 	return living;

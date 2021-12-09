@@ -43,7 +43,7 @@ virtual bool initialize()
 			baddie.position = {(float)spawn[0] + us::randf(), 1.f + us::randf(), (float)spawn[1] + us::randf()};
 			baddie.genes.damage = 1;
 			baddie.genes.speed = 1 + rand() % 9;
-			baddie.genes.target_node = rand() % state.level->living_lymph_nodes();
+			baddie.genes.target_node = rand() % state.level->living_lymph_nodes().size();
 			baddie.hp = 1;
 			state.baddies.push_back(baddie);
 		}
@@ -64,36 +64,13 @@ void spawn_projectile(us::state& state, const vec<3>& position, const vec<3>& ve
 
 virtual void update(float dt)
 {
- 	vec<2> dir = {};
-
  	state.time += dt;
-
-    if (glfwGetKey(g::gfx::GLFW_WIN, GLFW_KEY_W) == GLFW_PRESS) dir += { 0, dt};
-    if (glfwGetKey(g::gfx::GLFW_WIN, GLFW_KEY_S) == GLFW_PRESS) dir += { 0,-dt};
-    if (glfwGetKey(g::gfx::GLFW_WIN, GLFW_KEY_A) == GLFW_PRESS) dir += {-dt, 0};
-    if (glfwGetKey(g::gfx::GLFW_WIN, GLFW_KEY_D) == GLFW_PRESS) dir += { dt, 0};
-    // if (glfwGetKey(g::gfx::GLFW_WIN, GLFW_KEY_Q) == GLFW_PRESS) state.player.d_roll(-dt);
-    // if (glfwGetKey(g::gfx::GLFW_WIN, GLFW_KEY_E) == GLFW_PRESS) state.player.d_roll(dt);
-    if (glfwGetKey(g::gfx::GLFW_WIN, GLFW_KEY_LEFT) == GLFW_PRESS) state.player.theta += (-dt);
-    if (glfwGetKey(g::gfx::GLFW_WIN, GLFW_KEY_RIGHT) == GLFW_PRESS) state.player.theta += (dt);
-    if (glfwGetKey(g::gfx::GLFW_WIN, GLFW_KEY_UP) == GLFW_PRESS) state.player.phi += (dt);
-    if (glfwGetKey(g::gfx::GLFW_WIN, GLFW_KEY_DOWN) == GLFW_PRESS) state.player.phi += (-dt);
-    
-    if (glfwGetKey(g::gfx::GLFW_WIN, GLFW_KEY_SPACE) == GLFW_PRESS)
-    {
-    	us::projectile p;
-
-    	if (state.player.shoot(p))
-    	{
-			state.projectiles.push_back(p);
-    	}
-    }
 
     us::update_projectiles(state, dt);
     us::update_baddies(state, dt);
+    us::update_player(state, dt);
 
-    state.player.walk(dir * PLAYER_SPEED);
-    state.player.update(dt, *state.level);
+    // state.player.update(dt, *state.level);
 
     state.player.orientation = state.player.get_orientation();
 

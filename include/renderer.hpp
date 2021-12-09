@@ -161,6 +161,7 @@ struct renderer
 		level_mesh.using_shader(assets.shader("level.vs+level.fs"))
 		    ["u_model"].mat4(mat4::I())
 		    ["u_floor"].texture(assets.tex("floor_0.repeating.png"))
+		    ["u_roof"].texture(assets.tex("roof.repeating.png"))
 		    ["u_wall"].texture(assets.tex("Wall_0.repeating.png"))
 		    .set_camera(state.player)
 		    // .draw<GL_POINTS>();
@@ -187,16 +188,15 @@ struct renderer
 		for (unsigned i = 0; i < state.projectiles.size(); i++)
 		{
 			us::projectile& projectile = state.projectiles[i];
-			const std::string imgs[] = {
-				"bullet_0.png",
-				"bullet_1.png",
-				"bullet_2.png",
-				"bullet_3.png",
+			const std::string imgs[][4] = {
+				{"bullet_0.png", "bullet_1.png", "bullet_2.png", "bullet_3.png"},
+				{"laser.png", "laser.png", "laser.png", "laser.png"},
+				{"bullet_0.png", "bullet_1.png", "bullet_2.png", "bullet_3.png"},
 			};
 
 			billboard_mesh.using_shader(assets.shader("billboard.vs+animated_sprite.fs"))
 				["u_position"].vec3(projectile.position)
-				["u_sprite_sheet"].texture(assets.tex(imgs[i%4]))
+				["u_sprite_sheet"].texture(assets.tex(imgs[projectile.type][i%4]))
 				["u_frame_dims"].vec2({1, 1})
 				["u_frame"].int1(0)
 				.set_camera(state.player)
