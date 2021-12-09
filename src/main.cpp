@@ -35,6 +35,13 @@ virtual bool initialize()
 		std::cerr << "node_id: " << kvp.first << " dist: " << distances[kvp.first] << std::endl;
 	}
 
+	for (auto& spawn : state.level->spawn_points)
+	{
+		us::baddie baddie;
+		baddie.position = {(float)spawn[0], 1, (float)spawn[1]};
+		state.baddies.push_back(baddie);
+	}
+
 	return true;
 }
 
@@ -65,9 +72,18 @@ virtual void update(float dt)
     if (glfwGetKey(g::gfx::GLFW_WIN, GLFW_KEY_UP) == GLFW_PRESS) state.player.phi += (dt);
     if (glfwGetKey(g::gfx::GLFW_WIN, GLFW_KEY_DOWN) == GLFW_PRESS) state.player.phi += (-dt);
     
-    if (glfwGetKey(g::gfx::GLFW_WIN, GLFW_KEY_SPACE) == GLFW_PRESS) spawn_projectile(state, state.player.position, state.player.forward() + state.player.velocity);
+    if (glfwGetKey(g::gfx::GLFW_WIN, GLFW_KEY_SPACE) == GLFW_PRESS)
+    {
+    	us::projectile p;
+
+    	if (state.player.shoot(p))
+    	{
+			state.projectiles.push_back(p);
+    	}
+    }
 
     us::update_projectiles(state, dt);
+    us::update_baddies(state, dt);
 
     state.player.walk(dir * PLAYER_SPEED);
     state.player.update(dt, *state.level);

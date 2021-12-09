@@ -21,7 +21,7 @@ out vec2 v_uv;
 void main (void)
 {
 	vec4 v_world_pos = vec4(u_position, 1.0);
-	v_screen_pos = u_proj * ((u_view * v_world_pos) + vec4(a_position, 1.0));
+	v_screen_pos = u_proj * ((u_view * v_world_pos) + vec4(a_position, 0.0));
 	gl_Position = v_screen_pos;
 
 	v_uv = a_uv;

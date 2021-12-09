@@ -15,7 +15,7 @@ struct projectile : public g::dyn::particle
 		rocket
 	};
 
-	projectile::type type;
+	projectile::type type = projectile::type::bullet;
 	float life = 10;
 
 	projectile() = default;
@@ -27,11 +27,17 @@ struct projectile : public g::dyn::particle
 // 	float cool_down
 // }
 
+struct baddie : public g::dyn::particle
+{
+
+};
+
 
 struct player : public g::game::camera_perspective
 {
 	float theta = 0;
 	float phi = 0;
+	float cool_down = 0;
 
 	unsigned selected_weapon = 0;
 
@@ -54,6 +60,24 @@ struct player : public g::game::camera_perspective
 		velocity += dir;
 	}
 
+	float randf() { return ((random() % 2048) / 1024.f) - 1.f; }
+
+	bool shoot(projectile& p)
+	{
+		if (cool_down <= 0)
+		{
+			const auto spread = 0.5;
+			p.position = position + forward() * 0.25f;
+			p.velocity = forward() * 10 + (up() * randf() * spread) + (left() * randf() * spread);
+			p.life = 10;
+			cool_down = 0.1;
+
+			return true;
+		}
+
+		return false;
+	}
+
 	void update(float dt, const us::level& level)
 	{
 		auto new_pos = position + velocity * dt;
@@ -63,8 +87,10 @@ struct player : public g::game::camera_perspective
 			position = new_pos;	
 		}
 
+		cool_down = std::max<float>(0, cool_down - dt);
+
 		// position += velocity * dt;
-		velocity *= 0.9f;//(1.f - (1.f/(dt+0.00001f)));
+		velocity *= 0.9f;
 
 		phi = std::max<float>(-M_PI / 4, phi);
 		phi = std::min<float>( M_PI / 4, phi);
@@ -78,6 +104,7 @@ struct state
 	us::player player;
 
 	g::bounded_list<us::projectile, 100> projectiles;
+	g::bounded_list<us::baddie, 10000> baddies;
 };
 
 } // namespace us
