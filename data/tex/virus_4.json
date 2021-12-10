@@ -75,7 +75,7 @@
  "meta": {
   "app": "https://www.aseprite.org/",
   "version": "1.2.30-x64",
-  "image": "virus_3.png",
+  "image": "virus_4.png",
   "format": "RGBA8888",
   "size": { "w": 216, "h": 24 },
   "scale": "1",
