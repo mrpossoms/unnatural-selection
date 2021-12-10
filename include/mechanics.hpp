@@ -31,6 +31,9 @@ static void update_projectiles(us::state& state, float dt)
 
 			if (t <= dt)
 			{
+				for (unsigned i = 6; i--;)
+				state.particles.spawn(baddie.position, vec<3>{randf(), randf(), randf()} * 4, state.time, state.time + 10, {(rand() % 6)/6.f});
+
 				projectile.life = 0;
 				baddie.hp -= 1;
 				break;
@@ -117,11 +120,27 @@ void update_player(us::state& state, float dt)
     if (glfwGetKey(g::gfx::GLFW_WIN, GLFW_KEY_UP) == GLFW_PRESS) player.phi += (dt);
     if (glfwGetKey(g::gfx::GLFW_WIN, GLFW_KEY_DOWN) == GLFW_PRESS) player.phi += (-dt);
     
+	static double xlast, ylast;
+	double xpos = 0, ypos = 0;
+	auto mode = glfwGetInputMode(g::gfx::GLFW_WIN, GLFW_CURSOR);
+
+	if (GLFW_CURSOR_DISABLED == mode)
+	{
+		glfwGetCursorPos(g::gfx::GLFW_WIN, &xpos, &ypos);
+	}
+
+	auto dx = xpos - xlast;
+	auto dy = ypos - ylast;
+	player.phi += (-dy * dt);
+	player.theta += (dx * dt);
+	xlast = xpos; ylast = ypos;
+
 	if (glfwGetKey(g::gfx::GLFW_WIN, GLFW_KEY_1) == GLFW_PRESS) player.selected_weapon = 0;
 	if (glfwGetKey(g::gfx::GLFW_WIN, GLFW_KEY_2) == GLFW_PRESS) player.selected_weapon = 1;
 	if (glfwGetKey(g::gfx::GLFW_WIN, GLFW_KEY_3) == GLFW_PRESS) player.selected_weapon = 2;
 
-    if (glfwGetKey(g::gfx::GLFW_WIN, GLFW_KEY_SPACE) == GLFW_PRESS)
+    if (glfwGetKey(g::gfx::GLFW_WIN, GLFW_KEY_SPACE) == GLFW_PRESS ||
+    	glfwGetMouseButton(g::gfx::GLFW_WIN, GLFW_MOUSE_BUTTON_LEFT) == GLFW_PRESS)
     {
     	// for (unsigned i = 0; i < wea)
     	// if (player.shoot(p))

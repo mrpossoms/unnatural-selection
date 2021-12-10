@@ -49,6 +49,8 @@ virtual bool initialize()
 		}
 	}
 
+	glfwSetInputMode(g::gfx::GLFW_WIN, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+
 	return true;
 }
 
@@ -64,17 +66,21 @@ void spawn_projectile(us::state& state, const vec<3>& position, const vec<3>& ve
 
 virtual void update(float dt)
 {
- 	state.time += dt;
-
     us::update_projectiles(state, dt);
     us::update_baddies(state, dt);
     us::update_player(state, dt);
 
     // state.player.update(dt, *state.level);
+    if (glfwGetKey(g::gfx::GLFW_WIN, GLFW_KEY_ESCAPE) == GLFW_PRESS)
+    {
+    	exit(0);
+    }
 
     state.player.orientation = state.player.get_orientation();
 
 	renderer.draw(assets, state);
+
+ 	state.time += dt;
 }
 
 };
