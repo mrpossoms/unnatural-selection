@@ -19,10 +19,21 @@
 #define WEAPON_LASER_PROJECTILES 1
 #define WEAPON_SHOTGUN_PROJECTILES 7
 
+#define WAVE_BASE_ENEMY_COUNT 20
+#define WAVE_GROWTH_RATE 0.1
+#define WAVE_DURATION 30
+
+enum trait
+{
+	armor = 0,
+	shield = 1,
+	unprotected = 2,
+};
+
 // rows are indexed by weapon type. Column indices correspond
 // to attributes 0: armor, 1: shield, 2: unprotected
 static mat<3, 3> damage_matrix = {
-	{  2,   0, 1 }, // carbine
-	{  0,   2, 1 }, // laser
+	{  2, 0.5, 1 }, // carbine
+	{0.5,   2, 1 }, // laser
 	{0.5, 0.5, 2 }, // shotgun
 };

@@ -241,30 +241,6 @@ void for_each_neighbor(
 
 		if (cb(cells[ri][ci], ri, ci)) { break; }
 	}
-
-
-	// int offsets[8][2] = {
-	// 	{ -1, -1 },
-	// 	{ -1,  1 },
-	// 	{  1,  1 },
-	// 	{  1, -1 },
-
-	// 	{  0, -1 },
-	// 	{  1,  0 },
-	// 	{  0,  1 },
-	// 	{ -1,  0 },
-	// };
-
-	// for (unsigned i = 0; i < 8; i++)
-	// {
-	// 	auto ri = r + offsets[i][0];
-	// 	auto ci = c + offsets[i][1];
-
-	// 	if (ri < 0 || ri >= height()) { continue; }
-	// 	if (ci < 0 || ci >= width()) { continue; }
-
-	// 	if (cb(cells[ri][ci], ri, ci)) { break; }
-	// }
 }
 
 void build_nav_grid(int x, int y, int last_x, int last_y, unsigned node_id)
@@ -299,6 +275,14 @@ void build_nav_grid(int x, int y, int last_x, int last_y, unsigned node_id)
 	// {
 	// 	build_nav_grid(x + offsets[i][0], y + offsets[i][1], x, y, node_id);		
 	// }
+}
+
+cell& get_cell(const vec<3>& p)
+{
+	int r = std::max<int>(std::min<int>(height(), (int)p[0]), 0);
+	int c = std::max<int>(std::min<int>(width(), (int)p[2]), 0);
+
+	return cells[r][c];
 }
 
 cell& operator[](const vec<3>& p)

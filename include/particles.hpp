@@ -1,5 +1,32 @@
 #pragma once
 #include <g.h>
+#include "nlohmann/json.hpp"
+
+namespace us
+{
+
+struct sprite
+{
+	vec<2> frame_dims = {};
+	unsigned frames = 0;
+	float duration = 0;
+
+	sprite() = default;
+
+	sprite(const nlohmann::json& json)
+	{
+		for (auto& frame : json["frames"])
+		{
+			float w = frame["sourceSize"]["w"];
+			float sheet_w = json["meta"]["size"]["w"];
+			duration = frame["duration"];
+			duration *= 0.1f;
+			frame_dims = vec<2>{ w / sheet_w, 1 };
+			frames += 1;
+		}
+	}
+
+};
 
 template <size_t CAP>
 struct particle_system
@@ -29,6 +56,7 @@ struct particle_system
 		}
 	};
 
+	sprite sprite_meta;
 	g::gfx::mesh<particle_system::vertex> particles_mesh;
 	vec<3> positions[CAP];
 	vec<3> velocities[CAP];
@@ -100,3 +128,5 @@ struct particle_system
 		}
 	}
 };
+
+}
