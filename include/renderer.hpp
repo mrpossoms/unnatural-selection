@@ -1,6 +1,7 @@
 #pragma once
 #include "g.h"
 #include "state.hpp"
+#include "particles.hpp"
 #include "nlohmann/json.hpp"
 
 using mat4 = xmath::mat<4,4>;
@@ -148,11 +149,16 @@ struct renderer
 			build_level_mesh(state.level);
 		}
 
+		if (!state.particles.particles_mesh.is_initialized())
+		{
+			state.particles.initialize();
+		}
+
 		if (!billboard_mesh.is_initialized())
 		{
 			billboard_mesh = g::gfx::mesh_factory::plane();
 		}
- 
+
 		glClearColor(0, 0, 0, 1);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
@@ -164,7 +170,6 @@ struct renderer
 		    ["u_roof"].texture(assets.tex("roof.repeating.png"))
 		    ["u_wall"].texture(assets.tex("Wall_0.repeating.png"))
 		    .set_camera(state.player)
-		    // .draw<GL_POINTS>();
 		    .draw<GL_TRIANGLES>();
 
 		// render pustules
@@ -184,24 +189,6 @@ struct renderer
 
 		// glDisable(GL_DEPTH_TEST);
 
-		// projectiles
-		for (unsigned i = 0; i < state.projectiles.size(); i++)
-		{
-			us::projectile& projectile = state.projectiles[i];
-			const std::string imgs[][4] = {
-				{"bullet_0.png", "bullet_1.png", "bullet_2.png", "bullet_3.png"},
-				{"laser.png", "laser.png", "laser.png", "laser.png"},
-				{"bullet_0.png", "bullet_1.png", "bullet_2.png", "bullet_3.png"},
-			};
-
-			billboard_mesh.using_shader(assets.shader("billboard.vs+animated_sprite.fs"))
-				["u_position"].vec3(projectile.position)
-				["u_sprite_sheet"].texture(assets.tex(imgs[projectile.type][i%4]))
-				["u_frame_dims"].vec2({1, 1})
-				["u_frame"].int1(0)
-				.set_camera(state.player)
-				.draw<GL_TRIANGLE_FAN>();
-		}
 
 		// draw the baddies
 		// glDisable(GL_DEPTH_TEST);
@@ -232,6 +219,14 @@ struct renderer
 		}
 		// glEnable(GL_DEPTH_TEST);
 
+		const std::string gun_models[3] = {
+			"gun.obj", "lazer.obj", "Shotty.obj"
+		};
+
+		const std::string gun_tex[3] = {
+			"guntexture.png", "guntexture.png", "ShotgunTexture.png"
+		};
+
 
 		// glDisable(GL_DEPTH_TEST);
 		// for (unsigned r = 0; r < state.level->height(); r++)
@@ -242,8 +237,38 @@ struct renderer
 		// }
 		// glEnable(GL_DEPTH_TEST);
 
+		// projectiles
+		for (unsigned i = 0; i < state.projectiles.size(); i++)
+		{
+			us::projectile& projectile = state.projectiles[i];
+			const std::string imgs[][4] = {
+				{"bullet_0.png", "bullet_1.png", "bullet_2.png", "bullet_3.png"},
+				{"laser.png", "laser.png", "laser.png", "laser.png"},
+				{"bullet_0.png", "bullet_1.png", "bullet_2.png", "bullet_3.png"},
+			};
 
+			// if (projectile.type == us::projectile::category::laser) glBlendFunc(GL_ONE, GL_ONE);
+			billboard_mesh.using_shader(assets.shader("billboard.vs+animated_sprite.fs"))
+				["u_position"].vec3(projectile.position)
+				["u_sprite_sheet"].texture(assets.tex(imgs[projectile.type][i%4]))
+				["u_frame_dims"].vec2({1, 1})
+				["u_frame"].int1(0)
+				.set_camera(state.player)
+				.draw<GL_TRIANGLE_FAN>();
+			// if (projectile.type == us::projectile::category::laser) glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+		}
 			
+
+		state.particles.draw(assets.shader("particle.vs+particle.fs"), assets.tex("particles.png"), state.player, state.time);
+	
+		glDisable(GL_DEPTH_TEST);
+		assets.geo(gun_models[state.player.selected_weapon]).using_shader(assets.shader("level.vs+model.fs"))
+		    ["u_texture"].texture(assets.tex(gun_tex[state.player.selected_weapon]))
+		    ["u_model"].mat4((mat4::translation({0, -3, -2}) * state.player.orientation.inverse().to_matrix()) * mat4::translation(state.player.position))
+		    .set_camera(state.player)
+		    .draw<GL_TRIANGLES>();
+		glEnable(GL_DEPTH_TEST);
+
 	}
 };
 

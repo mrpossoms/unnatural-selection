@@ -1,5 +1,6 @@
 #pragma once
 #include "level.hpp"
+#include "particles.hpp"
 
 using namespace xmath;
 
@@ -54,6 +55,8 @@ struct baddie : public g::dyn::particle
 	{
 		auto base_damage = damage_matrix[(size_t)p.type][2];
 		// auto base_damage = damage_matrix[(size_t)p.type][2];
+
+
 	}
 };
 
@@ -114,12 +117,16 @@ struct player : public g::game::camera_perspective
 
 struct state
 {
+	unsigned wave = 0;
+
 	float time;
 	std::shared_ptr<us::level> level;
 	us::player player;
 
 	g::bounded_list<us::projectile, 100> projectiles;
 	g::bounded_list<us::baddie, 10000> baddies;
+
+	particle_system<128> particles;
 };
 
 } // namespace us
