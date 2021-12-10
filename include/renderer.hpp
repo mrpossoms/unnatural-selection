@@ -2,35 +2,11 @@
 #include "g.h"
 #include "state.hpp"
 #include "particles.hpp"
-#include "nlohmann/json.hpp"
 
 using mat4 = xmath::mat<4,4>;
 
 namespace us
 {
-
-struct sprite
-{
-	vec<2> frame_dims = {};
-	unsigned frames = 0;
-	float duration = 0;
-
-	sprite() = default;
-
-	sprite(const nlohmann::json& json)
-	{
-		for (auto& frame : json["frames"])
-		{
-			float w = frame["sourceSize"]["w"];
-			float sheet_w = json["meta"]["size"]["w"];
-			duration = frame["duration"];
-			duration *= 0.1f;
-			frame_dims = vec<2>{ w / sheet_w, 1 };
-			frames += 1;
-		}
-	}
-
-};
 
 struct renderer
 {
@@ -173,11 +149,17 @@ struct renderer
 		    .draw<GL_TRIANGLES>();
 
 		// render pustules
-		auto& node_mesh = assets.geo("node.obj");
 		for (auto& lymph_node : state.level->lymph_nodes)
 		{
-			if (state.level->cells[lymph_node[0]][lymph_node[1]].lymph_node_hp > 0)
+			const std::string nodes_strs[] = {
+				"node.obj", "node.obj", "node.obj", "node.obj"
+			};
+
+			auto lymph_node_hp = state.level->cells[lymph_node[0]][lymph_node[1]].lymph_node_hp;
+			if (lymph_node_hp > 0)
 			{
+				auto& node_mesh = assets.geo(nodes_strs[std::min<unsigned>(3, lymph_node_hp) / 25]);
+
 				node_mesh.using_shader(assets.shader("level.vs+model.fs"))
 				    ["u_model"].mat4(mat4::translation(vec<3>{(float)lymph_node[0], 0, (float)lymph_node[1]}))
 				    ["u_texture"].texture(assets.tex("nodeTexture.png"))
@@ -187,6 +169,17 @@ struct renderer
 			}
 		}
 
+
+		// render spawners
+		auto& spawner_mesh = assets.geo("spawner.obj");
+		for (auto& point : state.level->spawn_points)
+		{
+			spawner_mesh.using_shader(assets.shader("level.vs+model.fs"))
+			    ["u_model"].mat4(mat4::translation(vec<3>{(float)point[0], 6, (float)point[1]}))
+			    ["u_texture"].texture(assets.tex("spawner.png"))
+			    .set_camera(state.player)
+			    .draw<GL_TRIANGLES>();
+		}
 		// glDisable(GL_DEPTH_TEST);
 
 
@@ -195,6 +188,9 @@ struct renderer
 		for (unsigned i = 0; i < state.baddies.size(); i++)
 		{
 			auto& baddie = state.baddies[i];
+
+			if (baddie.hp <= 0) { continue; }
+
 			const std::string imgs[] = {
 				"virus_1.png",
 				"virus_2.png",
@@ -219,23 +215,6 @@ struct renderer
 		}
 		// glEnable(GL_DEPTH_TEST);
 
-		const std::string gun_models[3] = {
-			"gun.obj", "lazer.obj", "Shotty.obj"
-		};
-
-		const std::string gun_tex[3] = {
-			"guntexture.png", "guntexture.png", "ShotgunTexture.png"
-		};
-
-
-		// glDisable(GL_DEPTH_TEST);
-		// for (unsigned r = 0; r < state.level->height(); r++)
-		// for (unsigned c = 0; c < state.level->width(); c++)
-		// {
-		// 	if (state.level->cells[r][c].node_distances.size() == 0) { continue; }
-		// 	g::gfx::debug::print{&state.player}.color({0, 1, 0, 1}).ray(vec<3>{(float)r, 0, (float)c}, {0, 1, 0});// state.level->cells[r][c]
-		// }
-		// glEnable(GL_DEPTH_TEST);
 
 		// projectiles
 		for (unsigned i = 0; i < state.projectiles.size(); i++)
@@ -262,9 +241,48 @@ struct renderer
 		state.particles.draw(assets.shader("particle.vs+particle.fs"), assets.tex("particles.png"), state.player, state.time);
 	
 		glDisable(GL_DEPTH_TEST);
+
+		const std::string gun_reticles[3] = {
+			"Ret_1.png", "Ret_2.png", "Ret_3.png"
+		};
+
+        g::ui::layer root(&assets, "basic_gui.vs+basic_gui.fs");
+        root.set_font("UbuntuMono-B.ttf");
+
+
+
+        auto wave_msg = "more coming in " + std::to_string((int)state.wave.count_down);
+
+        if (state.wave.count_down > 28)
+        {
+        	wave_msg = "wave " + std::to_string(state.wave.number);
+        }
+
+        auto wave_text = root.child({-0.2, 0.2, 1}, {0, 0.9, -1.f}).set_shaders("basic_gui.vs+basic_font.fs");
+        wave_text.text(wave_msg, state.player)
+        ["u_view"].mat4(mat4::I())
+        ["u_proj"].mat4(state.player.projection())
+        .draw<GL_TRIANGLES>();
+
+
+        auto reticle = root.child({0.05, 0.05}, {0, 0, -1});
+        reticle.using_shader()
+        ["u_view"].mat4(mat4::I())
+        ["u_proj"].mat4(state.player.projection())
+        ["u_texture"].texture(assets.tex(gun_reticles[state.player.selected_weapon]))
+        .draw_tri_fan();
+
+		const std::string gun_models[3] = {
+			"gun.obj", "lazer.obj", "Shotty.obj"
+		};
+
+		const std::string gun_tex[3] = {
+			"guntexture.png", "guntexture.png", "ShotgunTexture.png"
+		};
+
 		assets.geo(gun_models[state.player.selected_weapon]).using_shader(assets.shader("level.vs+model.fs"))
 		    ["u_texture"].texture(assets.tex(gun_tex[state.player.selected_weapon]))
-		    ["u_model"].mat4((mat4::translation({0, -3, -2}) * state.player.orientation.inverse().to_matrix()) * mat4::translation(state.player.position))
+		    ["u_model"].mat4((mat4::translation({0, -3 - (float)state.player.is_sprinting, -2}) * state.player.orientation.inverse().to_matrix()) * mat4::translation(state.player.position))
 		    .set_camera(state.player)
 		    .draw<GL_TRIANGLES>();
 		glEnable(GL_DEPTH_TEST);

@@ -11,13 +11,16 @@ us::renderer renderer;
 
 us::state state;
 
+int frame = 0;
+int quit_frame = 0;
+
 unnatural_selection() = default;
 ~unnatural_selection() = default;
 
 virtual bool initialize()
 {
-	// state.level = std::make_shared<us::level>(assets.tex("9x9.png"));
-	state.level = std::make_shared<us::level>(assets.tex("Level.png"));
+	// state.level = std::make_shared<us::level>(assets.tex("9x9.spng"));
+	state.level = std::make_shared<us::level>(assets.tex("Level_1.png"));
 
 	std::cerr << state.level->info() << std::endl;
 
@@ -35,19 +38,27 @@ virtual bool initialize()
 		std::cerr << "node_id: " << kvp.first << " dist: " << distances[kvp.first] << std::endl;
 	}
 
-	for (auto& spawn : state.level->spawn_points)
+	for (unsigned i = 100; i--;)
 	{
-		for (unsigned i = 100; i--;)
-		{
-			us::baddie baddie;
-			baddie.position = {(float)spawn[0] + us::randf(), 1.f + us::randf(), (float)spawn[1] + us::randf()};
-			baddie.genes.damage = 1;
-			baddie.genes.speed = 1 + rand() % 9;
-			baddie.genes.target_node = rand() % state.level->living_lymph_nodes().size();
-			baddie.hp = 1;
-			state.baddies.push_back(baddie);
-		}
+		us::baddie baddie;
+		baddie.initialize();
+		state.next_generation.push_back(baddie);
 	}
+
+	for (unsigned i = 0; i < 8; i++)
+	{
+		state.impacts[i] = g::snd::source_ring(&assets.sound("bullet_impact_flesh_" + std::to_string(i + 1) + ".wav"), 3);
+	}
+
+	state.wall_impacts[0] = g::snd::source_ring(&assets.sound("fleshy-impact-miss-wall-hit.wav"), 3);
+	state.wall_impacts[1] = g::snd::source_ring(&assets.sound("fleshywallimpact.wav"), 3);
+
+
+	state.virus_sounds = g::snd::source_ring(&assets.sound("viral_sound_1.wav"), 20);
+	state.ambient = g::snd::source(&assets.sound("ambient-liquid.looping.wav"));
+	state.ambient.position({state.level->width() / 2.f, 0, state.level->height() / 2.f});
+
+	state.ambient.play();
 
 	glfwSetInputMode(g::gfx::GLFW_WIN, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
 
@@ -66,6 +77,7 @@ void spawn_projectile(us::state& state, const vec<3>& position, const vec<3>& ve
 
 virtual void update(float dt)
 {
+	us::update_wave(state, dt);
     us::update_projectiles(state, dt);
     us::update_baddies(state, dt);
     us::update_player(state, dt);
@@ -76,11 +88,37 @@ virtual void update(float dt)
     	exit(0);
     }
 
+	auto mode = glfwGetInputMode(g::gfx::GLFW_WIN, GLFW_CURSOR);
+	if (glfwGetKey(g::gfx::GLFW_WIN, GLFW_KEY_ESCAPE) == GLFW_PRESS && frame - quit_frame > 100)
+	{
+		switch(mode)
+		{
+			case GLFW_CURSOR_NORMAL:
+				glfwSetWindowShouldClose(g::gfx::GLFW_WIN, GLFW_TRUE);
+				break;
+			case GLFW_CURSOR_DISABLED:
+				glfwSetInputMode(g::gfx::GLFW_WIN, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
+				break;
+		}
+
+		quit_frame = frame;
+	}
+
     state.player.orientation = state.player.get_orientation();
+
+    state.ambient.update();
+    state.virus_sounds.update();
+	
+	for (unsigned i = 0; i < 2; i++)    
+    state.wall_impacts[i].update();
+
+    for (unsigned i = 0; i < 9; i++)
+    state.impacts[i].update();
 
 	renderer.draw(assets, state);
 
  	state.time += dt;
+ 	frame++;
 }
 
 };
