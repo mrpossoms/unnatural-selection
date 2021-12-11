@@ -50,6 +50,11 @@ virtual bool initialize()
 		state.impacts[i] = g::snd::source_ring(&assets.sound("bullet_impact_flesh_" + std::to_string(i + 1) + ".wav"), 3);
 	}
 
+	state.gun_sounds[0] = g::snd::source_ring(&assets.sound("sound_carbine.wav"), 10);
+	state.gun_sounds[1] = g::snd::source_ring(&assets.sound("LAZER_GUN_1.wav"), 10);
+	state.gun_sounds[2] = g::snd::source_ring(&assets.sound("sound_shotty.wav"), 10);
+
+
 	state.wall_impacts[0] = g::snd::source_ring(&assets.sound("fleshy-impact-miss-wall-hit.wav"), 3);
 	state.wall_impacts[1] = g::snd::source_ring(&assets.sound("fleshywallimpact.wav"), 3);
 
@@ -57,6 +62,8 @@ virtual bool initialize()
 	state.virus_sounds = g::snd::source_ring(&assets.sound("viral_sound_1.wav"), 20);
 	state.ambient = g::snd::source(&assets.sound("ambient-liquid.looping.wav"));
 	state.ambient.position({state.level->width() / 2.f, 0, state.level->height() / 2.f});
+
+	state.wave_start = g::snd::source(&assets.sound("Wave_Start.wav"));
 
 	state.ambient.play();
 
@@ -106,19 +113,22 @@ virtual void update(float dt)
 
     state.player.orientation = state.player.get_orientation();
 
+	renderer.draw(assets, state);
+
+ 	state.time += dt;
+ 	frame++;
+
     state.ambient.update();
     state.virus_sounds.update();
 	
 	for (unsigned i = 0; i < 2; i++)    
     state.wall_impacts[i].update();
 
-    for (unsigned i = 0; i < 9; i++)
+    for (unsigned i = 0; i < 8; i++)
     state.impacts[i].update();
 
-	renderer.draw(assets, state);
-
- 	state.time += dt;
- 	frame++;
+    for (unsigned i = 0; i < 3; i++)
+    state.gun_sounds[i].update();
 }
 
 };

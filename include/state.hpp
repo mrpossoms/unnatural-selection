@@ -44,7 +44,7 @@ struct baddie : public g::dyn::particle
 		uint8_t shield;
 		uint8_t damage;
 
-		float sum() { return hp + speed + armor + shield + damage; }
+		float sum() { return hp + speed + armor + shield + damage + 1; }
 	};
 
 	genome genes;
@@ -149,6 +149,7 @@ struct player : public g::game::camera_perspective
 	float cool_down = 0;
 	unsigned selected_weapon = 0;
 	bool is_sprinting = false;
+	float gun_shoot;
 
 	float weapon_velocities[3] = { WEAPON_CARBINE_VEL, WEAPON_LASER_VEL, WEAPON_SHOTGUN_VEL };
 	float weapon_cool_downs[3] = { WEAPON_CARBINE_COOLDOWN, WEAPON_LASER_COOLDOWN, WEAPON_SHOTGUN_COOLDOWN };
@@ -199,13 +200,13 @@ struct state
 {
 	struct {
 		unsigned number = 0;
-		float count_down = 10;
+		float count_down = 5;
 		unsigned baddies_to_spawn = 0;
 		vec<2, unsigned> spawn_point;
 		float spawn_cool_down = 0;
 	} wave;
 
-	float time;
+	float time = 0;
 	std::shared_ptr<us::level> level;
 	us::player player;
 
@@ -213,12 +214,16 @@ struct state
 	std::vector<us::baddie> baddies;
 	std::vector<us::baddie> next_generation;
 
-	particle_system<128> particles;
+	particle_system<128> gibs;
+	particle_system<128> smoke;
+	particle_system<128> chunks;
+	g::snd::source ambient;
+	g::snd::source wave_start;
 	g::snd::source_ring virus_sounds;
-	g::snd::source_ring impacts[9];
+	g::snd::source_ring impacts[8];
 	g::snd::source_ring wall_impacts[2];
 	g::snd::source_ring node_damage[2];
-	g::snd::source ambient;
+	g::snd::source_ring gun_sounds[3];
 };
 
 } // namespace us

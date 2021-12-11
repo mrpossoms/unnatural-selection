@@ -44,12 +44,21 @@ static void update_projectiles(us::state& state, float dt)
 		    	state.impacts[i].position(projectile.position);
 		    	state.impacts[i].play();
 
-				for (unsigned i = 6; i--;)
-				state.particles.spawn(baddie.position, vec<3>{randf(), randf(), randf()} * 4, state.time, state.time + 10, {(rand() % 11)/11.f});
+				for (unsigned i = 3; i--;)
+				state.chunks.spawn(baddie.position, 0.5f, 1, vec<3>{randf(), randf(), randf()} * 4, -0.125f, 0, state.time, state.time + 10, {(rand() % 11)/11.f});
 
 				projectile.life = 0;
 				// baddie.hp -= 1;
 				baddie.take_hit(projectile);
+
+				if (baddie.hp <= 0)
+				{
+					for (unsigned i = 6; i--;)
+					state.gibs.spawn(baddie.position, 1, 1, vec<3>{randf(), randf(), randf()} * 4, 0, 0, state.time, state.time + 10, {(rand() % 11)/11.f});
+					
+					state.smoke.spawn(baddie.position, 1, 0.5f, vec<3>{randf(), randf(), randf()} * 0.25f, 1.f, -0.05f, state.time, state.time + 10, {});
+				}
+
 				break;
 			}
 		}
@@ -75,7 +84,7 @@ static void update_baddies(us::state& state, float dt)
 
 		if (baddie.hp <= 0)
 		{
-			// state.baddies.remove_at(i);
+			state.baddies.erase(state.baddies.begin() + i);
 			continue;
 		}
 
@@ -87,7 +96,7 @@ static void update_baddies(us::state& state, float dt)
 			baddie.hp = 0; // die on collision
 		}
 
-		if (rand() % 100 == 0)
+		if (rand() % 1000 == 0)
 		{
 			state.virus_sounds.position(baddie.position);
 			state.virus_sounds.play();
@@ -115,7 +124,7 @@ static void update_baddies(us::state& state, float dt)
 
 			if (best_node)
 			{
-				baddie.velocity += (vec<3>{best_node->r + 0.5f, randf() + (i % 6), best_node->c + 0.5f} - baddie.position) * 0.1 * baddie.speed;
+				baddie.velocity += (vec<3>{best_node->r + 0.5f, randf() + (i % 5) + 1, best_node->c + 0.5f} - baddie.position) * 0.1 * baddie.speed;
 				baddie.progress += baddie.velocity.magnitude() * dt;
 			}
 		}
@@ -135,6 +144,7 @@ void update_player(us::state& state, float dt)
 	player.is_sprinting = false;
 
  	vec<2> dir = {};
+ 	float sensitivity = 0.5;
     if (glfwGetKey(g::gfx::GLFW_WIN, GLFW_KEY_W) == GLFW_PRESS) dir += { 0, dt};
     if (glfwGetKey(g::gfx::GLFW_WIN, GLFW_KEY_S) == GLFW_PRESS) dir += { 0,-dt};
     if (glfwGetKey(g::gfx::GLFW_WIN, GLFW_KEY_A) == GLFW_PRESS) dir += {-dt, 0};
@@ -157,8 +167,8 @@ void update_player(us::state& state, float dt)
 
 	auto dx = xpos - xlast;
 	auto dy = ypos - ylast;
-	player.phi += (-dy * dt);
-	player.theta += (dx * dt);
+	player.phi += (-dy * dt * sensitivity);
+	player.theta += (dx * dt * sensitivity);
 	xlast = xpos; ylast = ypos;
 
 	if (glfwGetKey(g::gfx::GLFW_WIN, GLFW_KEY_1) == GLFW_PRESS) player.selected_weapon = 0;
@@ -168,10 +178,13 @@ void update_player(us::state& state, float dt)
     if (glfwGetKey(g::gfx::GLFW_WIN, GLFW_KEY_SPACE) == GLFW_PRESS ||
     	glfwGetMouseButton(g::gfx::GLFW_WIN, GLFW_MOUSE_BUTTON_LEFT) == GLFW_PRESS)
     {
-			if (player.cool_down <= 0)
+			if (!player.is_sprinting && player.cool_down <= 0)
 			{
 				auto& selected_weapon = player.selected_weapon;
 				const auto spread = player.weapon_spreads[selected_weapon];
+
+				state.gun_sounds[selected_weapon].position(player.position);
+				state.gun_sounds[selected_weapon].play();
 
 				for (unsigned i = 0; i < player.weapon_projectiles[selected_weapon]; i++)
 				{
@@ -184,6 +197,7 @@ void update_player(us::state& state, float dt)
 				}
 
 				player.cool_down = player.weapon_cool_downs[selected_weapon];
+				player.gun_shoot = 1;
 			}
     	// }
     }
@@ -202,6 +216,9 @@ void update_player(us::state& state, float dt)
 
 	player.phi = std::max<float>(-M_PI / 4, player.phi);
 	player.phi = std::min<float>( M_PI / 4, player.phi);
+
+	player.gun_shoot -= dt * 10;
+	player.gun_shoot = std::max<float>(0, player.gun_shoot);
 
 	g::snd::set_observer(player.position, player.velocity, player.orientation);
 }
@@ -224,7 +241,8 @@ void update_wave(us::state& state, float dt)
 			}
 		}
 
-
+		state.wave_start.position(state.player.position);
+		state.wave_start.play();
 
 		state.wave.spawn_point = state.level->spawn_points[rand() % state.level->spawn_points.size()];
 		state.wave.baddies_to_spawn = WAVE_BASE_ENEMY_COUNT + state.wave.number * (WAVE_BASE_ENEMY_COUNT * WAVE_GROWTH_RATE);
@@ -238,7 +256,7 @@ void update_wave(us::state& state, float dt)
 	{
 		auto next_baddie = state.next_generation[state.baddies.size() % state.next_generation.size()];
 
-		auto spawn = state.wave.spawn_point;
+		auto spawn = state.level->spawn_points[rand() % state.level->spawn_points.size()];
 		next_baddie.position = {(float)spawn[0] + us::randf(), 6.f, (float)spawn[1] + us::randf()};
 
 		next_baddie.reset(state.wave.number);
@@ -250,7 +268,7 @@ void update_wave(us::state& state, float dt)
 
 		state.baddies.push_back(next_baddie);
 		state.wave.baddies_to_spawn--;
-		state.wave.spawn_cool_down = 10.f / (float)(state.wave.number * (WAVE_BASE_ENEMY_COUNT * WAVE_GROWTH_RATE));
+		state.wave.spawn_cool_down = 10.f / (float)(WAVE_BASE_ENEMY_COUNT + (state.wave.number * WAVE_BASE_ENEMY_COUNT * WAVE_GROWTH_RATE));
 	}
 
 	state.wave.count_down -= dt;

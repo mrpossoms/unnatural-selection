@@ -279,8 +279,8 @@ void build_nav_grid(int x, int y, int last_x, int last_y, unsigned node_id)
 
 cell& get_cell(const vec<3>& p)
 {
-	int r = std::max<int>(std::min<int>(height(), (int)p[0]), 0);
-	int c = std::max<int>(std::min<int>(width(), (int)p[2]), 0);
+	int r = std::max<int>(std::min<int>(height()-1, (int)p[0]), 0);
+	int c = std::max<int>(std::min<int>(width()-1, (int)p[2]), 0);
 
 	return cells[r][c];
 }

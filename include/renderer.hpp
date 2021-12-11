@@ -125,9 +125,11 @@ struct renderer
 			build_level_mesh(state.level);
 		}
 
-		if (!state.particles.particles_mesh.is_initialized())
+		if (!state.gibs.particles_mesh.is_initialized())
 		{
-			state.particles.initialize();
+			state.gibs.initialize(get_sprite("particles"));
+			state.smoke.initialize(get_sprite("Smoke"));
+			state.chunks.initialize(get_sprite("chunks"));
 		}
 
 		if (!billboard_mesh.is_initialized())
@@ -152,13 +154,13 @@ struct renderer
 		for (auto& lymph_node : state.level->lymph_nodes)
 		{
 			const std::string nodes_strs[] = {
-				"node.obj", "node.obj", "node.obj", "node.obj"
+				"node_damaged_2.obj", "node_damaged_1.obj", "node_damaged_0.obj", "node.obj",
 			};
 
 			auto lymph_node_hp = state.level->cells[lymph_node[0]][lymph_node[1]].lymph_node_hp;
 			if (lymph_node_hp > 0)
 			{
-				auto& node_mesh = assets.geo(nodes_strs[std::min<unsigned>(3, lymph_node_hp) / 25]);
+				auto& node_mesh = assets.geo(nodes_strs[std::min<unsigned>(3, lymph_node_hp / 25)]);
 
 				node_mesh.using_shader(assets.shader("level.vs+model.fs"))
 				    ["u_model"].mat4(mat4::translation(vec<3>{(float)lymph_node[0], 0, (float)lymph_node[1]}))
@@ -205,10 +207,13 @@ struct renderer
 
 			auto& meta = get_sprite(jsons[i % 3]);
 
-			billboard_mesh.using_shader(assets.shader("billboard.vs+animated_sprite.fs"))
+			billboard_mesh.using_shader(assets.shader("billboard.vs+baddies.fs"))
 				["u_position"].vec3(baddie.position)
 				["u_sprite_sheet"].texture(assets.tex(imgs[i%3]))
+				["u_armor_sheet"].texture(assets.tex("armor.png"))
 				["u_frame_dims"].vec2(meta.frame_dims)
+				["u_shield"].flt(baddie.shield)
+				["u_armor"].flt(baddie.armor)
 				["u_frame"].int1(static_cast<int>((state.time * meta.duration) + (i * 10)) % meta.frames)
 				.set_camera(state.player)
 				.draw<GL_TRIANGLE_FAN>();
@@ -236,11 +241,40 @@ struct renderer
 				.draw<GL_TRIANGLE_FAN>();
 			// if (projectile.type == us::projectile::category::laser) glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 		}
-			
 
-		state.particles.draw(assets.shader("particle.vs+particle.fs"), assets.tex("particles.png"), state.player, state.time);
-	
+		state.gibs.draw(assets.shader("particle.vs+particle.fs"), assets.tex("particles.png"), state.player, state.time);
+		state.chunks.draw(assets.shader("particle.vs+particle.fs"), assets.tex("chunks.png"), state.player, state.time);
+						
+
+		glDepthMask(GL_FALSE);
+		state.smoke.draw(assets.shader("particle.vs+particle.fs"), assets.tex("smoke.png"), state.player, state.time);
+		glDepthMask(GL_TRUE);
+
 		glDisable(GL_DEPTH_TEST);
+
+		const std::string gun_models[3] = {
+			"gun.obj", "lazer.obj", "Shotty.obj"
+		};
+
+		const std::string gun_tex[3] = {
+			"gun_carbine.png", "gun_laser.png", "gun_shotty.png"
+		};
+
+		const std::string gun_json[3] = {
+			"gun_carbine", "gun_laser", "gun_shotty"
+		};
+
+
+		auto& gun_sprite = get_sprite(gun_json[state.player.selected_weapon]);
+		assets.geo("gun_plane.obj").using_shader(assets.shader("level.vs+animated_sprite.fs"))
+		    ["u_sprite_sheet"].texture(assets.tex(gun_tex[state.player.selected_weapon]))
+			// ["u_texture"].texture(assets.tex(gun_tex[state.player.selected_weapon]))
+		    ["u_model"].mat4(mat4::scale({-3, 3, -3}) * mat4::translation({-1.25, -0.5, -1}))
+		    ["u_view"].mat4(mat4::I())
+		    ["u_proj"].mat4(state.player.projection())
+			["u_frame_dims"].vec2(gun_sprite.frame_dims)
+			["u_frame"].int1(std::min<int>(2, state.player.gun_shoot * 3))//static_cast<int>((state.time * get_sprite("gun_carbine").duration)) % get_sprite("gun_carbine").frames)
+		    .draw<GL_TRIANGLES>();
 
 		const std::string gun_reticles[3] = {
 			"Ret_1.png", "Ret_2.png", "Ret_3.png"
@@ -248,8 +282,6 @@ struct renderer
 
         g::ui::layer root(&assets, "basic_gui.vs+basic_gui.fs");
         root.set_font("UbuntuMono-B.ttf");
-
-
 
         auto wave_msg = "more coming in " + std::to_string((int)state.wave.count_down);
 
@@ -264,27 +296,43 @@ struct renderer
         ["u_proj"].mat4(state.player.projection())
         .draw<GL_TRIANGLES>();
 
-
         auto reticle = root.child({0.05, 0.05}, {0, 0, -1});
         reticle.using_shader()
         ["u_view"].mat4(mat4::I())
         ["u_proj"].mat4(state.player.projection())
         ["u_texture"].texture(assets.tex(gun_reticles[state.player.selected_weapon]))
+        ["u_border_thickness"].flt(0)
         .draw_tri_fan();
 
-		const std::string gun_models[3] = {
-			"gun.obj", "lazer.obj", "Shotty.obj"
-		};
+        auto gun_ui = root.child(vec<2>{0.3, 0.1} * 1.1f, {1.5, -1.5f, -1});
+        // gun_ui.using_shader()
+        // ["u_view"].mat4(mat4::I())
+        // ["u_proj"].mat4(state.player.projection())
+        // ["u_border_thickness"].flt(0.1)
+        // ["u_border_color"].vec4({1, 1, 1, 1})
+        // .draw_tri_fan();
 
-		const std::string gun_tex[3] = {
-			"guntexture.png", "guntexture.png", "ShotgunTexture.png"
-		};
+        auto carbine_icon = gun_ui.child(vec<2>{0.66f, -1.0f} * (1 + (state.player.selected_weapon == 0) * 0.33f), {0.5f, 0, -1});
+        carbine_icon.using_shader()
+        ["u_view"].mat4(mat4::I())
+        ["u_proj"].mat4(state.player.projection())
+        ["u_texture"].texture(assets.tex("carbine_ui.png"))
+        .draw_tri_fan();
 
-		assets.geo(gun_models[state.player.selected_weapon]).using_shader(assets.shader("level.vs+model.fs"))
-		    ["u_texture"].texture(assets.tex(gun_tex[state.player.selected_weapon]))
-		    ["u_model"].mat4((mat4::translation({0, -3 - (float)state.player.is_sprinting, -2}) * state.player.orientation.inverse().to_matrix()) * mat4::translation(state.player.position))
-		    .set_camera(state.player)
-		    .draw<GL_TRIANGLES>();
+        auto laser_icon = gun_ui.child(vec<2>{0.66f, -1.0f} * (1 + (state.player.selected_weapon == 1) * 0.33f), {0.0f, 0, -1});
+        laser_icon.using_shader()
+        ["u_view"].mat4(mat4::I())
+        ["u_proj"].mat4(state.player.projection())
+        ["u_texture"].texture(assets.tex("laser2_ui.png"))
+        .draw_tri_fan();
+
+        auto shotty_icon = gun_ui.child(vec<2>{0.66f, -1.0f} * (1 + (state.player.selected_weapon == 2) * 0.33f), {-0.5f, 0, -1});
+        shotty_icon.using_shader()
+        ["u_view"].mat4(mat4::I())
+        ["u_proj"].mat4(state.player.projection())
+        ["u_texture"].texture(assets.tex("shotty_ui.png"))
+        .draw_tri_fan();
+
 		glEnable(GL_DEPTH_TEST);
 
 	}

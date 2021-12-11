@@ -12,6 +12,7 @@ struct sprite
 	float duration = 0;
 
 	sprite() = default;
+	~sprite() = default;
 
 	sprite(const nlohmann::json& json)
 	{
@@ -26,6 +27,10 @@ struct sprite
 		}
 	}
 
+	vec<2> frame_uv_offset(unsigned frame)
+	{
+		return {frame_dims[0] * frame, 0};
+	}
 };
 
 template <size_t CAP>
@@ -59,7 +64,11 @@ struct particle_system
 	sprite sprite_meta;
 	g::gfx::mesh<particle_system::vertex> particles_mesh;
 	vec<3> positions[CAP];
+	float  scales[CAP];
+	float  alphas[CAP];
 	vec<3> velocities[CAP];
+	float  scale_vels[CAP];
+	float  alpha_vels[CAP];
 	vec<2> birth_deaths[CAP];
 	vec<2> uv_offsets[CAP];
 	int next = 0;
@@ -70,20 +79,24 @@ struct particle_system
 		{
 			positions[i] = { 0, (float)i, 0 };
 		}
+
 	}
 
-	void initialize()
+	void initialize(const sprite& s)
 	{
 		std::vector<particle_system::vertex> vertices;
 		std::vector<uint32_t> indices;
 
+		sprite_meta = s;
+
 		for (uint16_t i = 0; i < 1; i++)
 		{
+			const auto s = 0.5f;
 			auto n = vertices.size();
-			vertices.push_back({{ 0, 0, 0 }, {1, 1}, 0});
-			vertices.push_back({{ 1, 0, 0 }, {0, 1}, 0});
-			vertices.push_back({{ 1, 1, 0 }, {0, 0}, 0});
-			vertices.push_back({{ 0, 1, 0 }, {1, 0}, 0});
+			vertices.push_back({{-s,-s, 0 }, {1, 1}, 0});
+			vertices.push_back({{ s,-s, 0 }, {0, 1}, 0});
+			vertices.push_back({{ s, s, 0 }, {0, 0}, 0});
+			vertices.push_back({{-s, s, 0 }, {1, 0}, 0});
 
 			indices.push_back(n + 0);
 			indices.push_back(n + 3);
@@ -101,12 +114,16 @@ struct particle_system
 	}
 
 
-	void spawn(const vec<3>& position, const vec<3>& velocity, float birth_time, float death_time, const vec<2>& uv_offset)
+	void spawn(const vec<3>& position, float scale, float alpha, const vec<3>& velocity, float scale_vel, float alpha_vel, float birth_time, float death_time, const vec<2>& uv_offset)
 	{
 		positions[next] = position;
+		scales[next] = scale;
+		alphas[next] = alpha;
 		velocities[next] = velocity;
+		scale_vels[next] = scale_vel;
+		alpha_vels[next] = alpha_vel;
 		birth_deaths[next] = { birth_time, death_time };
-		uv_offsets[next] = uv_offset;
+		uv_offsets[next] = sprite_meta.frame_uv_offset(rand() % sprite_meta.frames);
 		next = (next + 1) % CAP;
 	}
 
@@ -118,10 +135,14 @@ struct particle_system
 			particles_mesh.using_shader(shader)
 			    ["u_sprite_sheet"].texture(sprite_sheet)
 			    ["u_positions"].vec3(positions[i])//, CAP)
+			    ["u_scales"].flt(scales[i])//, CAP)
+			    ["u_alphas"].flt(alphas[i])//, CAP)
 			    ["u_velocities"].vec3(velocities[i])//, CAP)
+			    ["u_scale_vels"].flt(scale_vels[i])
+			    ["u_alpha_vels"].flt(alpha_vels[i])
 			    ["u_birth_death"].vec2(birth_deaths[i])//, CAP)
 			    ["u_uv_offset"].vec2(uv_offsets[i])//, CAP)
-			    ["u_frame_dims"].vec2({1.f/6.f, 1.f})
+			    ["u_frame_dims"].vec2(sprite_meta.frame_dims)
 			    ["u_time"].flt(time)
 			    .set_camera(cam)
 			    .template draw<GL_TRIANGLES>();
