@@ -1,0 +1,92 @@
+{ "frames": {
+   "gun_laser 0.aseprite": {
+    "frame": { "x": 0, "y": 0, "w": 206, "h": 144 },
+    "rotated": false,
+    "trimmed": false,
+    "spriteSourceSize": { "x": 0, "y": 0, "w": 206, "h": 144 },
+    "sourceSize": { "w": 206, "h": 144 },
+    "duration": 100
+   },
+   "gun_laser 1.aseprite": {
+    "frame": { "x": 206, "y": 0, "w": 206, "h": 144 },
+    "rotated": false,
+    "trimmed": false,
+    "spriteSourceSize": { "x": 0, "y": 0, "w": 206, "h": 144 },
+    "sourceSize": { "w": 206, "h": 144 },
+    "duration": 100
+   },
+   "gun_laser 2.aseprite": {
+    "frame": { "x": 412, "y": 0, "w": 206, "h": 144 },
+    "rotated": false,
+    "trimmed": false,
+    "spriteSourceSize": { "x": 0, "y": 0, "w": 206, "h": 144 },
+    "sourceSize": { "w": 206, "h": 144 },
+    "duration": 100
+   },
+   "gun_laser 3.aseprite": {
+    "frame": { "x": 618, "y": 0, "w": 206, "h": 144 },
+    "rotated": false,
+    "trimmed": false,
+    "spriteSourceSize": { "x": 0, "y": 0, "w": 206, "h": 144 },
+    "sourceSize": { "w": 206, "h": 144 },
+    "duration": 100
+   },
+   "gun_laser 4.aseprite": {
+    "frame": { "x": 824, "y": 0, "w": 206, "h": 144 },
+    "rotated": false,
+    "trimmed": false,
+    "spriteSourceSize": { "x": 0, "y": 0, "w": 206, "h": 144 },
+    "sourceSize": { "w": 206, "h": 144 },
+    "duration": 100
+   },
+   "gun_laser 5.aseprite": {
+    "frame": { "x": 1030, "y": 0, "w": 206, "h": 144 },
+    "rotated": false,
+    "trimmed": false,
+    "spriteSourceSize": { "x": 0, "y": 0, "w": 206, "h": 144 },
+    "sourceSize": { "w": 206, "h": 144 },
+    "duration": 100
+   },
+   "gun_laser 6.aseprite": {
+    "frame": { "x": 1236, "y": 0, "w": 206, "h": 144 },
+    "rotated": false,
+    "trimmed": false,
+    "spriteSourceSize": { "x": 0, "y": 0, "w": 206, "h": 144 },
+    "sourceSize": { "w": 206, "h": 144 },
+    "duration": 100
+   },
+   "gun_laser 7.aseprite": {
+    "frame": { "x": 1442, "y": 0, "w": 206, "h": 144 },
+    "rotated": false,
+    "trimmed": false,
+    "spriteSourceSize": { "x": 0, "y": 0, "w": 206, "h": 144 },
+    "sourceSize": { "w": 206, "h": 144 },
+    "duration": 100
+   },
+   "gun_laser 8.aseprite": {
+    "frame": { "x": 1648, "y": 0, "w": 206, "h": 144 },
+    "rotated": false,
+    "trimmed": false,
+    "spriteSourceSize": { "x": 0, "y": 0, "w": 206, "h": 144 },
+    "sourceSize": { "w": 206, "h": 144 },
+    "duration": 100
+   }
+ },
+ "meta": {
+  "app": "https://www.aseprite.org/",
+  "version": "1.2.30-x64",
+  "image": "gun_laser.png",
+  "format": "RGBA8888",
+  "size": { "w": 1854, "h": 144 },
+  "scale": "1",
+  "frameTags": [
+  ],
+  "layers": [
+   { "name": "energy", "opacity": 255, "blendMode": "normal" },
+   { "name": "Layer 2", "opacity": 255, "blendMode": "normal" },
+   { "name": "Layer 4", "opacity": 255, "blendMode": "normal" }
+  ],
+  "slices": [
+  ]
+ }
+}
