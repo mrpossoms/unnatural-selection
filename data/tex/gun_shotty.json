@@ -1,51 +1,51 @@
 { "frames": {
-   "gun_shotty 0.aseprite": {
-    "frame": { "x": 0, "y": 0, "w": 341, "h": 144 },
+   "guns 0.aseprite": {
+    "frame": { "x": 0, "y": 0, "w": 429, "h": 191 },
     "rotated": false,
     "trimmed": false,
-    "spriteSourceSize": { "x": 0, "y": 0, "w": 341, "h": 144 },
-    "sourceSize": { "w": 341, "h": 144 },
-    "duration": 50
+    "spriteSourceSize": { "x": 0, "y": 0, "w": 429, "h": 191 },
+    "sourceSize": { "w": 429, "h": 191 },
+    "duration": 100
    },
-   "gun_shotty 1.aseprite": {
-    "frame": { "x": 341, "y": 0, "w": 341, "h": 144 },
+   "guns 1.aseprite": {
+    "frame": { "x": 429, "y": 0, "w": 429, "h": 191 },
     "rotated": false,
     "trimmed": false,
-    "spriteSourceSize": { "x": 0, "y": 0, "w": 341, "h": 144 },
-    "sourceSize": { "w": 341, "h": 144 },
-    "duration": 50
+    "spriteSourceSize": { "x": 0, "y": 0, "w": 429, "h": 191 },
+    "sourceSize": { "w": 429, "h": 191 },
+    "duration": 100
    },
-   "gun_shotty 2.aseprite": {
-    "frame": { "x": 682, "y": 0, "w": 341, "h": 144 },
+   "guns 2.aseprite": {
+    "frame": { "x": 858, "y": 0, "w": 429, "h": 191 },
     "rotated": false,
     "trimmed": false,
-    "spriteSourceSize": { "x": 0, "y": 0, "w": 341, "h": 144 },
-    "sourceSize": { "w": 341, "h": 144 },
-    "duration": 50
+    "spriteSourceSize": { "x": 0, "y": 0, "w": 429, "h": 191 },
+    "sourceSize": { "w": 429, "h": 191 },
+    "duration": 100
    },
-   "gun_shotty 3.aseprite": {
-    "frame": { "x": 1023, "y": 0, "w": 341, "h": 144 },
+   "guns 3.aseprite": {
+    "frame": { "x": 1287, "y": 0, "w": 429, "h": 191 },
     "rotated": false,
     "trimmed": false,
-    "spriteSourceSize": { "x": 0, "y": 0, "w": 341, "h": 144 },
-    "sourceSize": { "w": 341, "h": 144 },
-    "duration": 50
+    "spriteSourceSize": { "x": 0, "y": 0, "w": 429, "h": 191 },
+    "sourceSize": { "w": 429, "h": 191 },
+    "duration": 100
    },
-   "gun_shotty 4.aseprite": {
-    "frame": { "x": 1364, "y": 0, "w": 341, "h": 144 },
+   "guns 4.aseprite": {
+    "frame": { "x": 1716, "y": 0, "w": 429, "h": 191 },
     "rotated": false,
     "trimmed": false,
-    "spriteSourceSize": { "x": 0, "y": 0, "w": 341, "h": 144 },
-    "sourceSize": { "w": 341, "h": 144 },
-    "duration": 50
+    "spriteSourceSize": { "x": 0, "y": 0, "w": 429, "h": 191 },
+    "sourceSize": { "w": 429, "h": 191 },
+    "duration": 100
    },
-   "gun_shotty 5.aseprite": {
-    "frame": { "x": 1705, "y": 0, "w": 341, "h": 144 },
+   "guns 5.aseprite": {
+    "frame": { "x": 2145, "y": 0, "w": 429, "h": 191 },
     "rotated": false,
     "trimmed": false,
-    "spriteSourceSize": { "x": 0, "y": 0, "w": 341, "h": 144 },
-    "sourceSize": { "w": 341, "h": 144 },
-    "duration": 50
+    "spriteSourceSize": { "x": 0, "y": 0, "w": 429, "h": 191 },
+    "sourceSize": { "w": 429, "h": 191 },
+    "duration": 100
    }
  },
  "meta": {
@@ -53,17 +53,18 @@
   "version": "1.2.30-x64",
   "image": "gun_shotty.png",
   "format": "RGBA8888",
-  "size": { "w": 2046, "h": 144 },
+  "size": { "w": 2574, "h": 191 },
   "scale": "1",
   "frameTags": [
   ],
   "layers": [
-   { "name": "Layer 1", "opacity": 255, "blendMode": "normal" },
-   { "name": "barrel", "opacity": 255, "blendMode": "normal" },
-   { "name": "body", "opacity": 255, "blendMode": "normal" },
-   { "name": "chamber", "opacity": 255, "blendMode": "normal" },
-   { "name": "reload", "opacity": 255, "blendMode": "normal" },
-   { "name": "shell", "opacity": 255, "blendMode": "normal" }
+   { "name": "Shotty" },
+   { "name": "Layer 1", "group": "Shotty", "opacity": 255, "blendMode": "normal" },
+   { "name": "barrel", "group": "Shotty", "opacity": 255, "blendMode": "normal" },
+   { "name": "body", "group": "Shotty", "opacity": 255, "blendMode": "normal" },
+   { "name": "chamber", "group": "Shotty", "opacity": 255, "blendMode": "normal" },
+   { "name": "reload", "group": "Shotty", "opacity": 255, "blendMode": "normal" },
+   { "name": "shell", "group": "Shotty", "opacity": 255, "blendMode": "normal" }
   ],
   "slices": [
   ]

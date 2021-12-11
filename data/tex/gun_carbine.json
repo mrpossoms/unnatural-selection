@@ -1,43 +1,43 @@
 { "frames": {
-   "gun_carbine 0.aseprite": {
-    "frame": { "x": 0, "y": 0, "w": 206, "h": 144 },
+   "guns 0.aseprite": {
+    "frame": { "x": 0, "y": 0, "w": 429, "h": 191 },
     "rotated": false,
     "trimmed": false,
-    "spriteSourceSize": { "x": 0, "y": 0, "w": 206, "h": 144 },
-    "sourceSize": { "w": 206, "h": 144 },
-    "duration": 50
+    "spriteSourceSize": { "x": 0, "y": 0, "w": 429, "h": 191 },
+    "sourceSize": { "w": 429, "h": 191 },
+    "duration": 100
    },
-   "gun_carbine 1.aseprite": {
-    "frame": { "x": 206, "y": 0, "w": 206, "h": 144 },
+   "guns 1.aseprite": {
+    "frame": { "x": 429, "y": 0, "w": 429, "h": 191 },
     "rotated": false,
     "trimmed": false,
-    "spriteSourceSize": { "x": 0, "y": 0, "w": 206, "h": 144 },
-    "sourceSize": { "w": 206, "h": 144 },
-    "duration": 50
+    "spriteSourceSize": { "x": 0, "y": 0, "w": 429, "h": 191 },
+    "sourceSize": { "w": 429, "h": 191 },
+    "duration": 100
    },
-   "gun_carbine 2.aseprite": {
-    "frame": { "x": 412, "y": 0, "w": 206, "h": 144 },
+   "guns 2.aseprite": {
+    "frame": { "x": 858, "y": 0, "w": 429, "h": 191 },
     "rotated": false,
     "trimmed": false,
-    "spriteSourceSize": { "x": 0, "y": 0, "w": 206, "h": 144 },
-    "sourceSize": { "w": 206, "h": 144 },
-    "duration": 50
+    "spriteSourceSize": { "x": 0, "y": 0, "w": 429, "h": 191 },
+    "sourceSize": { "w": 429, "h": 191 },
+    "duration": 100
    },
-   "gun_carbine 3.aseprite": {
-    "frame": { "x": 618, "y": 0, "w": 206, "h": 144 },
+   "guns 3.aseprite": {
+    "frame": { "x": 1287, "y": 0, "w": 429, "h": 191 },
     "rotated": false,
     "trimmed": false,
-    "spriteSourceSize": { "x": 0, "y": 0, "w": 206, "h": 144 },
-    "sourceSize": { "w": 206, "h": 144 },
-    "duration": 50
+    "spriteSourceSize": { "x": 0, "y": 0, "w": 429, "h": 191 },
+    "sourceSize": { "w": 429, "h": 191 },
+    "duration": 100
    },
-   "gun_carbine 4.aseprite": {
-    "frame": { "x": 824, "y": 0, "w": 206, "h": 144 },
+   "guns 4.aseprite": {
+    "frame": { "x": 1716, "y": 0, "w": 429, "h": 191 },
     "rotated": false,
     "trimmed": false,
-    "spriteSourceSize": { "x": 0, "y": 0, "w": 206, "h": 144 },
-    "sourceSize": { "w": 206, "h": 144 },
-    "duration": 50
+    "spriteSourceSize": { "x": 0, "y": 0, "w": 429, "h": 191 },
+    "sourceSize": { "w": 429, "h": 191 },
+    "duration": 100
    }
  },
  "meta": {
@@ -45,14 +45,15 @@
   "version": "1.2.30-x64",
   "image": "gun_carbine.png",
   "format": "RGBA8888",
-  "size": { "w": 1030, "h": 144 },
+  "size": { "w": 2145, "h": 191 },
   "scale": "1",
   "frameTags": [
   ],
   "layers": [
-   { "name": "flash", "opacity": 255, "blendMode": "normal" },
-   { "name": "gun", "opacity": 255, "blendMode": "normal" },
-   { "name": "Layer 4", "opacity": 255, "blendMode": "normal" }
+   { "name": "carbine" },
+   { "name": "flash", "group": "carbine", "opacity": 255, "blendMode": "normal" },
+   { "name": "gun", "group": "carbine", "opacity": 255, "blendMode": "normal" },
+   { "name": "Layer 4", "group": "carbine", "opacity": 255, "blendMode": "normal" }
   ],
   "slices": [
   ]

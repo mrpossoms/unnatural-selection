@@ -1,74 +1,74 @@
 { "frames": {
-   "gun_laser 0.aseprite": {
-    "frame": { "x": 0, "y": 0, "w": 206, "h": 144 },
+   "guns 0.aseprite": {
+    "frame": { "x": 0, "y": 0, "w": 429, "h": 191 },
     "rotated": false,
     "trimmed": false,
-    "spriteSourceSize": { "x": 0, "y": 0, "w": 206, "h": 144 },
-    "sourceSize": { "w": 206, "h": 144 },
+    "spriteSourceSize": { "x": 0, "y": 0, "w": 429, "h": 191 },
+    "sourceSize": { "w": 429, "h": 191 },
     "duration": 100
    },
-   "gun_laser 1.aseprite": {
-    "frame": { "x": 206, "y": 0, "w": 206, "h": 144 },
+   "guns 1.aseprite": {
+    "frame": { "x": 429, "y": 0, "w": 429, "h": 191 },
     "rotated": false,
     "trimmed": false,
-    "spriteSourceSize": { "x": 0, "y": 0, "w": 206, "h": 144 },
-    "sourceSize": { "w": 206, "h": 144 },
+    "spriteSourceSize": { "x": 0, "y": 0, "w": 429, "h": 191 },
+    "sourceSize": { "w": 429, "h": 191 },
     "duration": 100
    },
-   "gun_laser 2.aseprite": {
-    "frame": { "x": 412, "y": 0, "w": 206, "h": 144 },
+   "guns 2.aseprite": {
+    "frame": { "x": 858, "y": 0, "w": 429, "h": 191 },
     "rotated": false,
     "trimmed": false,
-    "spriteSourceSize": { "x": 0, "y": 0, "w": 206, "h": 144 },
-    "sourceSize": { "w": 206, "h": 144 },
+    "spriteSourceSize": { "x": 0, "y": 0, "w": 429, "h": 191 },
+    "sourceSize": { "w": 429, "h": 191 },
     "duration": 100
    },
-   "gun_laser 3.aseprite": {
-    "frame": { "x": 618, "y": 0, "w": 206, "h": 144 },
+   "guns 3.aseprite": {
+    "frame": { "x": 1287, "y": 0, "w": 429, "h": 191 },
     "rotated": false,
     "trimmed": false,
-    "spriteSourceSize": { "x": 0, "y": 0, "w": 206, "h": 144 },
-    "sourceSize": { "w": 206, "h": 144 },
+    "spriteSourceSize": { "x": 0, "y": 0, "w": 429, "h": 191 },
+    "sourceSize": { "w": 429, "h": 191 },
     "duration": 100
    },
-   "gun_laser 4.aseprite": {
-    "frame": { "x": 824, "y": 0, "w": 206, "h": 144 },
+   "guns 4.aseprite": {
+    "frame": { "x": 1716, "y": 0, "w": 429, "h": 191 },
     "rotated": false,
     "trimmed": false,
-    "spriteSourceSize": { "x": 0, "y": 0, "w": 206, "h": 144 },
-    "sourceSize": { "w": 206, "h": 144 },
+    "spriteSourceSize": { "x": 0, "y": 0, "w": 429, "h": 191 },
+    "sourceSize": { "w": 429, "h": 191 },
     "duration": 100
    },
-   "gun_laser 5.aseprite": {
-    "frame": { "x": 1030, "y": 0, "w": 206, "h": 144 },
+   "guns 5.aseprite": {
+    "frame": { "x": 2145, "y": 0, "w": 429, "h": 191 },
     "rotated": false,
     "trimmed": false,
-    "spriteSourceSize": { "x": 0, "y": 0, "w": 206, "h": 144 },
-    "sourceSize": { "w": 206, "h": 144 },
+    "spriteSourceSize": { "x": 0, "y": 0, "w": 429, "h": 191 },
+    "sourceSize": { "w": 429, "h": 191 },
     "duration": 100
    },
-   "gun_laser 6.aseprite": {
-    "frame": { "x": 1236, "y": 0, "w": 206, "h": 144 },
+   "guns 6.aseprite": {
+    "frame": { "x": 2574, "y": 0, "w": 429, "h": 191 },
     "rotated": false,
     "trimmed": false,
-    "spriteSourceSize": { "x": 0, "y": 0, "w": 206, "h": 144 },
-    "sourceSize": { "w": 206, "h": 144 },
+    "spriteSourceSize": { "x": 0, "y": 0, "w": 429, "h": 191 },
+    "sourceSize": { "w": 429, "h": 191 },
     "duration": 100
    },
-   "gun_laser 7.aseprite": {
-    "frame": { "x": 1442, "y": 0, "w": 206, "h": 144 },
+   "guns 7.aseprite": {
+    "frame": { "x": 3003, "y": 0, "w": 429, "h": 191 },
     "rotated": false,
     "trimmed": false,
-    "spriteSourceSize": { "x": 0, "y": 0, "w": 206, "h": 144 },
-    "sourceSize": { "w": 206, "h": 144 },
+    "spriteSourceSize": { "x": 0, "y": 0, "w": 429, "h": 191 },
+    "sourceSize": { "w": 429, "h": 191 },
     "duration": 100
    },
-   "gun_laser 8.aseprite": {
-    "frame": { "x": 1648, "y": 0, "w": 206, "h": 144 },
+   "guns 8.aseprite": {
+    "frame": { "x": 3432, "y": 0, "w": 429, "h": 191 },
     "rotated": false,
     "trimmed": false,
-    "spriteSourceSize": { "x": 0, "y": 0, "w": 206, "h": 144 },
-    "sourceSize": { "w": 206, "h": 144 },
+    "spriteSourceSize": { "x": 0, "y": 0, "w": 429, "h": 191 },
+    "sourceSize": { "w": 429, "h": 191 },
     "duration": 100
    }
  },
@@ -77,14 +77,15 @@
   "version": "1.2.30-x64",
   "image": "gun_laser.png",
   "format": "RGBA8888",
-  "size": { "w": 1854, "h": 144 },
+  "size": { "w": 3861, "h": 191 },
   "scale": "1",
   "frameTags": [
   ],
   "layers": [
-   { "name": "energy", "opacity": 255, "blendMode": "normal" },
-   { "name": "Layer 2", "opacity": 255, "blendMode": "normal" },
-   { "name": "Layer 4", "opacity": 255, "blendMode": "normal" }
+   { "name": "laser" },
+   { "name": "energy", "group": "laser", "opacity": 255, "blendMode": "normal" },
+   { "name": "Layer 2", "group": "laser", "opacity": 255, "blendMode": "normal" },
+   { "name": "Layer 4", "group": "laser", "opacity": 255, "blendMode": "normal" }
   ],
   "slices": [
   ]
