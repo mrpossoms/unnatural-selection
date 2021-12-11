@@ -63,14 +63,14 @@ struct particle_system
 
 	sprite sprite_meta;
 	g::gfx::mesh<particle_system::vertex> particles_mesh;
-	vec<3> positions[CAP];
-	float  scales[CAP];
-	float  alphas[CAP];
-	vec<3> velocities[CAP];
-	float  scale_vels[CAP];
-	float  alpha_vels[CAP];
-	vec<2> birth_deaths[CAP];
-	vec<2> uv_offsets[CAP];
+	vec<3> positions[CAP] = {};
+	float  scales[CAP] = {};
+	float  alphas[CAP] = {};
+	vec<3> velocities[CAP] = {};
+	float  scale_vels[CAP] = {};
+	float  alpha_vels[CAP] = {};
+	vec<2> birth_deaths[CAP] = {};
+	vec<2> uv_offsets[CAP] = {};
 	int next = 0;
 
 	particle_system()

@@ -57,6 +57,7 @@ struct baddie : public g::dyn::particle
 	float damage_dealt = 0;
 	float damage_taken = 0;
 	float progress = 0;
+	bool idle = false;
 
 	uint8_t* genome_buf()
 	{
@@ -87,7 +88,7 @@ struct baddie : public g::dyn::particle
 	{
 		float points = wave;
 		float sum = genes.sum();
-		hp = points * (genes.hp / sum);
+		hp = points * (genes.hp / sum) + 0.1f;
 		speed = 1 + points * (genes.speed / sum);
 		armor = points * (genes.armor / sum);
 		shield = points * (genes.shield / sum);
@@ -209,6 +210,9 @@ struct state
 	float time = 0;
 	std::shared_ptr<us::level> level;
 	us::player player;
+
+	unsigned onboarding_step = 0;
+	bool onboarding_done = false;
 
 	g::bounded_list<us::projectile, 100> projectiles;
 	std::vector<us::baddie> baddies;

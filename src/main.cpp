@@ -28,7 +28,13 @@ virtual bool initialize()
 	auto& spawn = state.level->spawn_points[0];
 	auto& distances = state.level->cells[spawn[0]][spawn[1]].node_distances;
 
-	state.player.position = { (float)state.level->lymph_nodes[0][0], 2.f, (float)state.level->lymph_nodes[0][1] };
+	state.level->for_each_neighbor(state.level->lymph_nodes[0][0], state.level->lymph_nodes[0][1], [&](us::level::cell& cell, int r, int c) {
+		if (cell.is_floor)
+		{
+			state.player.position = { (float)r, 2.f, (float)c };
+			return true;
+		}
+	});
 
 	glDisable(GL_CULL_FACE);
 	glPointSize(4);
@@ -84,15 +90,33 @@ void spawn_projectile(us::state& state, const vec<3>& position, const vec<3>& ve
 
 virtual void update(float dt)
 {
-	us::update_wave(state, dt);
-    us::update_projectiles(state, dt);
+	if (state.onboarding_done)
+	{
+		us::update_wave(state, dt);
+	}
+
     us::update_baddies(state, dt);
+    us::update_projectiles(state, dt);
     us::update_player(state, dt);
 
     // state.player.update(dt, *state.level);
     if (glfwGetKey(g::gfx::GLFW_WIN, GLFW_KEY_ESCAPE) == GLFW_PRESS)
     {
     	exit(0);
+    }
+
+    static bool e_was_down;
+    if (glfwGetKey(g::gfx::GLFW_WIN, GLFW_KEY_E) == GLFW_PRESS)
+    {
+    	if (!e_was_down)
+    	{
+    		state.onboarding_step++;
+    		e_was_down = true;
+    	}
+    }
+    else
+    {
+    	e_was_down = false;
     }
 
 	auto mode = glfwGetInputMode(g::gfx::GLFW_WIN, GLFW_CURSOR);

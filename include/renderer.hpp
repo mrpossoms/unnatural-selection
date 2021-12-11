@@ -16,6 +16,95 @@ struct renderer
 	std::unordered_map<std::string, sprite> sprites;
 	std::unordered_map<std::string, nlohmann::json> json;
 
+	void draw_onboarding(g::asset::store& assets, us::state& state)
+	{
+		if (state.onboarding_step == 0)
+		{
+			auto m = mat4::rotation({0, 1, 0}, M_PI / 2) * mat4::translation({(float)state.level->lymph_nodes[0][0] + 5, 2, (float)state.level->lymph_nodes[0][1]});
+	        g::ui::layer tip(&assets, "basic_gui.vs+basic_font.fs", m);
+	        tip.set_font("UbuntuMono-B.ttf");
+	        tip.text("Hello nanobot, and welcome\nto the human body. You are\ntasked with cleaning up this\ninfection site from viral\nparticles.\n[E to continue]", state.player)
+	        .set_camera(state.player)
+	        .draw<GL_TRIANGLES>();
+		}
+		if (state.onboarding_step == 1)
+		{
+			auto m = mat4::rotation({0, 1, 0}, M_PI / 2) * mat4::translation({(float)state.level->lymph_nodes[0][0] + 5, 2, (float)state.level->lymph_nodes[0][1]});
+	        g::ui::layer tip(&assets, "basic_gui.vs+basic_font.fs", m);
+	        tip.set_font("UbuntuMono-B.ttf");
+	        tip.text("To control your thrusters\nuse keys W A D S to\nselect weapons use keys\n1 2 3. To fire your selected\nweapon, press the left mouse button\n[E to continue]", state.player)
+	        .set_camera(state.player)
+	        .draw<GL_TRIANGLES>();
+		}
+		if (state.onboarding_step == 2)
+		{
+			auto m = mat4::rotation({0, 1, 0}, M_PI / 2) * mat4::translation({(float)state.level->lymph_nodes[0][0] + 5, 2, (float)state.level->lymph_nodes[0][1]});
+	        g::ui::layer tip(&assets, "basic_gui.vs+basic_font.fs", m);
+	        tip.set_font("UbuntuMono-B.ttf");
+	        tip.text("Your objective is to defend\nthe purple lymph nodes such as\nthose infront of and behind\nyou from viruses\n[E to continue]", state.player)
+	        .set_camera(state.player)
+	        .draw<GL_TRIANGLES>();
+		}
+		if (state.onboarding_step == 3)
+		{
+			if (state.baddies.size() == 0)
+			{
+				us::baddie dummy;
+				dummy.position = {(float)state.level->lymph_nodes[0][0] + 6, 1, (float)state.level->lymph_nodes[0][1]};
+				dummy.reset(1);
+				dummy.hp = 1;
+				dummy.idle = true;
+				dummy.shield = 0;
+				dummy.armor = 0;
+				state.baddies.push_back(dummy);
+				std::cerr << std::to_string(dummy.hp) << std::endl;
+
+				us::baddie shield_dummy;
+				shield_dummy.position = {(float)state.level->lymph_nodes[0][0] + 6, 1, (float)state.level->lymph_nodes[0][1]-2};
+				shield_dummy.reset(1);
+				shield_dummy.hp = 1;
+				shield_dummy.idle = true;
+				shield_dummy.shield = 1;
+				shield_dummy.armor = 0;
+				state.baddies.push_back(shield_dummy);
+				std::cerr << std::to_string(shield_dummy.hp) << std::endl;
+
+				us::baddie armor_dummy;
+				armor_dummy.position = {(float)state.level->lymph_nodes[0][0] + 6, 4, (float)state.level->lymph_nodes[0][1]+2};
+				armor_dummy.reset(1);
+				armor_dummy.hp = 1;
+				armor_dummy.idle = true;
+				armor_dummy.shield = 0;
+				armor_dummy.armor = 1;
+				state.baddies.push_back(armor_dummy);
+				std::cerr << std::to_string(armor_dummy.hp) << std::endl;
+
+			}
+
+			auto m = mat4::rotation({0, 1, 0}, M_PI / 2) * mat4::translation({(float)state.level->lymph_nodes[0][0] + 5, 2, (float)state.level->lymph_nodes[0][1]});
+	        g::ui::layer tip(&assets, "basic_gui.vs+basic_font.fs", m);
+	        tip.set_font("UbuntuMono-B.ttf");
+	        tip.text("Viruses are always evolving to\ncombat your tactics. On the\nleft is a virus that has evolved\narmor, in the center is an\nunprotected virus, on the right\nis one that has evolved shields.\n[E to continue]", state.player)
+	        .set_camera(state.player)
+	        .draw<GL_TRIANGLES>();
+		}
+		if (state.onboarding_step == 4)
+		{
+			auto m = mat4::rotation({0, 1, 0}, M_PI / 2) * mat4::translation({(float)state.level->lymph_nodes[0][0] + 5, 2, (float)state.level->lymph_nodes[0][1]});
+	        g::ui::layer tip(&assets, "basic_gui.vs+basic_font.fs", m);
+	        tip.set_font("UbuntuMono-B.ttf");
+	        tip.text("Use your rifle [1] to counter\narmor. Your laser [2] to counter\nshields, and your shotgun to\nshred unprotected viruses\n[E to continue]", state.player)
+	        .set_camera(state.player)
+	        .draw<GL_TRIANGLES>();
+		}
+		if (state.onboarding_step == 5)
+		{
+			state.baddies.clear();
+			state.onboarding_done = true;
+		}
+	}
+
+
 	void build_level_mesh(const std::shared_ptr<us::level> level)
 	{
 		level_mesh = mesh_factory::empty_mesh<g::gfx::vertex::pos_uv_norm>();
@@ -250,6 +339,9 @@ struct renderer
 		state.smoke.draw(assets.shader("particle.vs+particle.fs"), assets.tex("smoke.png"), state.player, state.time);
 		glDepthMask(GL_TRUE);
 
+		if (!state.onboarding_done)
+		{draw_onboarding(assets, state);}
+
 		glDisable(GL_DEPTH_TEST);
 
 		const std::string gun_models[3] = {
@@ -283,18 +375,26 @@ struct renderer
         g::ui::layer root(&assets, "basic_gui.vs+basic_gui.fs");
         root.set_font("UbuntuMono-B.ttf");
 
-        auto wave_msg = "more coming in " + std::to_string((int)state.wave.count_down);
-
-        if (state.wave.count_down > 28)
+        if (state.onboarding_done)
         {
-        	wave_msg = "wave " + std::to_string(state.wave.number);
-        }
+	        auto wave_msg = "more coming in " + std::to_string((int)state.wave.count_down);
 
-        auto wave_text = root.child({-0.2, 0.2, 1}, {0, 0.9, -1.f}).set_shaders("basic_gui.vs+basic_font.fs");
-        wave_text.text(wave_msg, state.player)
-        ["u_view"].mat4(mat4::I())
-        ["u_proj"].mat4(state.player.projection())
-        .draw<GL_TRIANGLES>();
+	        if (state.wave.count_down > 28)
+	        {
+	        	wave_msg = "wave " + std::to_string(state.wave.number);
+	        }
+
+	        if (state.level->living_lymph_nodes().size() == 0)
+	        {
+	        	wave_msg = "GAME OVER";
+	        }
+
+	        auto wave_text = root.child({-0.2, 0.2, 1}, {0, 0.9, -1.f}).set_shaders("basic_gui.vs+basic_font.fs");
+	        wave_text.text(wave_msg, state.player)
+	        ["u_view"].mat4(mat4::I())
+	        ["u_proj"].mat4(state.player.projection())
+	        .draw<GL_TRIANGLES>();        	
+        }
 
         auto reticle = root.child({0.05, 0.05}, {0, 0, -1});
         reticle.using_shader()

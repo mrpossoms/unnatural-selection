@@ -33,7 +33,7 @@ enum trait
 // rows are indexed by weapon type. Column indices correspond
 // to attributes 0: armor, 1: shield, 2: unprotected
 static mat<3, 3> damage_matrix = {
-	{  2, 0.5, 1 }, // carbine
-	{0.5,   2, 1 }, // laser
-	{0.5, 0.5, 2 }, // shotgun
+	{  2, 0.125, 1 }, // carbine
+	{0.01,   2, 0.01 }, // laser
+	{0.125, 0.125, 2 }, // shotgun
 };

@@ -102,7 +102,7 @@ static void update_baddies(us::state& state, float dt)
 			state.virus_sounds.play();
 		}
 
-		if (living_lymph_nodes.size() > 0)
+		if (living_lymph_nodes.size() > 0 && !baddie.idle)
 		{ // do path finding
 
 			level::cell* best_node = nullptr;
@@ -127,6 +127,10 @@ static void update_baddies(us::state& state, float dt)
 				baddie.velocity += (vec<3>{best_node->r + 0.5f, randf() + (i % 5) + 1, best_node->c + 0.5f} - baddie.position) * 0.1 * baddie.speed;
 				baddie.progress += baddie.velocity.magnitude() * dt;
 			}
+		}
+		else
+		{
+			baddie.velocity += (vec<3>{0, randf() + (i % 5) + 1 - baddie.position[1], 0}) * 0.1 * baddie.speed;
 		}
 
 		auto new_pos = baddie.position + baddie.velocity * dt;
