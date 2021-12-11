@@ -1,0 +1,71 @@
+{ "frames": {
+   "gun_shotty 0.aseprite": {
+    "frame": { "x": 0, "y": 0, "w": 341, "h": 144 },
+    "rotated": false,
+    "trimmed": false,
+    "spriteSourceSize": { "x": 0, "y": 0, "w": 341, "h": 144 },
+    "sourceSize": { "w": 341, "h": 144 },
+    "duration": 50
+   },
+   "gun_shotty 1.aseprite": {
+    "frame": { "x": 341, "y": 0, "w": 341, "h": 144 },
+    "rotated": false,
+    "trimmed": false,
+    "spriteSourceSize": { "x": 0, "y": 0, "w": 341, "h": 144 },
+    "sourceSize": { "w": 341, "h": 144 },
+    "duration": 50
+   },
+   "gun_shotty 2.aseprite": {
+    "frame": { "x": 682, "y": 0, "w": 341, "h": 144 },
+    "rotated": false,
+    "trimmed": false,
+    "spriteSourceSize": { "x": 0, "y": 0, "w": 341, "h": 144 },
+    "sourceSize": { "w": 341, "h": 144 },
+    "duration": 50
+   },
+   "gun_shotty 3.aseprite": {
+    "frame": { "x": 1023, "y": 0, "w": 341, "h": 144 },
+    "rotated": false,
+    "trimmed": false,
+    "spriteSourceSize": { "x": 0, "y": 0, "w": 341, "h": 144 },
+    "sourceSize": { "w": 341, "h": 144 },
+    "duration": 50
+   },
+   "gun_shotty 4.aseprite": {
+    "frame": { "x": 1364, "y": 0, "w": 341, "h": 144 },
+    "rotated": false,
+    "trimmed": false,
+    "spriteSourceSize": { "x": 0, "y": 0, "w": 341, "h": 144 },
+    "sourceSize": { "w": 341, "h": 144 },
+    "duration": 50
+   },
+   "gun_shotty 5.aseprite": {
+    "frame": { "x": 1705, "y": 0, "w": 341, "h": 144 },
+    "rotated": false,
+    "trimmed": false,
+    "spriteSourceSize": { "x": 0, "y": 0, "w": 341, "h": 144 },
+    "sourceSize": { "w": 341, "h": 144 },
+    "duration": 50
+   }
+ },
+ "meta": {
+  "app": "https://www.aseprite.org/",
+  "version": "1.2.30-x64",
+  "image": "gun_shotty.png",
+  "format": "RGBA8888",
+  "size": { "w": 2046, "h": 144 },
+  "scale": "1",
+  "frameTags": [
+  ],
+  "layers": [
+   { "name": "Layer 1", "opacity": 255, "blendMode": "normal" },
+   { "name": "barrel", "opacity": 255, "blendMode": "normal" },
+   { "name": "body", "opacity": 255, "blendMode": "normal" },
+   { "name": "chamber", "opacity": 255, "blendMode": "normal" },
+   { "name": "reload", "opacity": 255, "blendMode": "normal" },
+   { "name": "shell", "opacity": 255, "blendMode": "normal" }
+  ],
+  "slices": [
+  ]
+ }
+}
