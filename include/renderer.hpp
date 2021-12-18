@@ -235,7 +235,7 @@ struct renderer
 		    ["u_model"].mat4(mat4::I())
 		    ["u_floor"].texture(assets.tex("floor_0.repeating.png"))
 		    ["u_roof"].texture(assets.tex("roof.repeating.png"))
-		    ["u_wall"].texture(assets.tex("Wall_0.repeating.png"))
+		    ["u_wall"].texture(assets.tex("wall_0.repeating.png"))
 		    .set_camera(state.player)
 		    .draw<GL_TRIANGLES>();
 

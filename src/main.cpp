@@ -19,7 +19,7 @@ unnatural_selection() = default;
 
 virtual bool initialize()
 {
-	// state.level = std::make_shared<us::level>(assets.tex("9x9.spng"));
+	// state.level = std::make_shared<us::level>(assets.tex("9x9.png"));
 	state.level = std::make_shared<us::level>(assets.tex("Level_1.png"));
 
 	std::cerr << state.level->info() << std::endl;

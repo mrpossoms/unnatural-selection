@@ -178,13 +178,12 @@ void build_wall(unsigned r, unsigned c, int id, int depth=0)
 	cells[r][c].wall_id = id;
 
 	unsigned best_bound = 0;
-	int br = 0, bc = 0;
 	cell* best = nullptr;
 
 	for_each_neighbor(r, c, [&](cell& neighbor, unsigned nr, unsigned nc) -> bool {
 		auto bound = is_boundary(nr, nc);
 
-		if (best_bound < bound && neighbor.wall_id == -1 || (neighbor.wall_start && depth > 2))
+		if ((best_bound < bound && neighbor.wall_id == -1) || (neighbor.wall_start && depth > 2))
 		{
 			best_bound = bound;
 			best = &neighbor;
@@ -192,6 +191,8 @@ void build_wall(unsigned r, unsigned c, int id, int depth=0)
 			// bc = nc;
 			// return true;
 		}
+
+		return false;
 	});
 
 	if (best)
@@ -218,6 +219,7 @@ unsigned is_boundary(unsigned r, unsigned c)
 	for_each_neighbor(r, c, [&](cell& neighbor, unsigned r, unsigned c) -> bool {
 		// if (neighbor.is_floor) { boundary = true; }
 		count += neighbor.is_floor;
+		return false;
 	});
 
 	return count;
@@ -236,8 +238,8 @@ void for_each_neighbor(
 
 		auto ri = r + dr;
 		auto ci = c + dc;
-		if (ri < 0 || ri >= height()) { continue; }
-		if (ci < 0 || ci >= width()) { continue; }
+		if (ri < 0 || ri >= (int)height()) { continue; }
+		if (ci < 0 || ci >= (int)width()) { continue; }
 
 		if (cb(cells[ri][ci], ri, ci)) { break; }
 	}
@@ -245,7 +247,7 @@ void for_each_neighbor(
 
 void build_nav_grid(int x, int y, int last_x, int last_y, unsigned node_id)
 {
-	if (x < 0 || y < 0 || x >= width() || y >= height()) { return; }
+	if (x < 0 || y < 0 || x >= (int)width() || y >= (int)height()) { return; }
 	if (!cells[x][y].is_floor) { return; }
 
 	auto itr = cells[x][y].node_distances.find(node_id);
@@ -263,12 +265,15 @@ void build_nav_grid(int x, int y, int last_x, int last_y, unsigned node_id)
 		{
 			dist = std::min<float>(cell.node_distances[node_id], dist);
 		}
+
+		return false;
 	});
 
 	cells[x][y].node_distances[node_id] = dist + sqrtf(dx * dx + dy * dy);
 
 	for_each_neighbor(x, y, [&](cell& cell, unsigned r, unsigned c) -> bool {
 		build_nav_grid(r, c, x, y, node_id);
+		return false;
 	});
 
 	// for (unsigned i = 0; i < sizeof(offsets) / sizeof(vec<2, int>); i++)
