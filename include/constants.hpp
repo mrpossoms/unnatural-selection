@@ -1,7 +1,7 @@
 #pragma once
 
 #define LYMPH_NODE_HP 100
-#define PLAYER_SPEED 20
+#define PLAYER_SPEED 40
 
 #define WEAPON_CARBINE_COOLDOWN 0.125
 #define WEAPON_LASER_COOLDOWN 0.001
