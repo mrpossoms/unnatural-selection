@@ -218,7 +218,7 @@ void update_player(us::state& state, float dt)
 	player.cool_down = std::max<float>(0, player.cool_down - dt);
 
 	// position += velocity * dt;
-	player.velocity *= 0.9f;
+	player.velocity += player.velocity * -dt * 10;
 
 	player.phi = std::max<float>(-M_PI / 4, player.phi);
 	player.phi = std::min<float>( M_PI / 4, player.phi);
