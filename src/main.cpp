@@ -158,9 +158,7 @@ virtual void update(float dt)
 
 };
 
-
-#include <emscripten.h>
-
+#ifdef __EMSCRIPTEN__
 EM_JS(int, canvas_get_width, (), {
   return document.getElementById('canvas').width;
 });
@@ -168,6 +166,7 @@ EM_JS(int, canvas_get_width, (), {
 EM_JS(int, canvas_get_height, (), {
   return document.getElementById('canvas').height;
 });
+#endif
 
 int main (int argc, const char* argv[])
 {
@@ -178,17 +177,15 @@ int main (int argc, const char* argv[])
 	opts.name = "unnatural selection";
 	opts.gfx.fullscreen = false;
 
+#ifdef __EMSCRIPTEN__
 	auto monitor = glfwGetPrimaryMonitor();
 	const GLFWvidmode* mode = glfwGetVideoMode(monitor);
 
-	// glfwWindowHint(GLFW_RED_BITS, mode->redBits);
-	// glfwWindowHint(GLFW_GREEN_BITS, mode->greenBits);
-	// glfwWindowHint(GLFW_BLUE_BITS, mode->blueBits);
-	// glfwWindowHint(GLFW_REFRESH_RATE, mode->refreshRate);					
-	// g::gfx::GLFW_WIN = glfwCreateWindow(mode->width, mode->height, opts.name ? opts.name : "", monitor, NULL);
-
 	opts.gfx.width = canvas_get_width();
 	opts.gfx.height = canvas_get_height();
+#else
+	opts.gfx.fullscreen = true;
+#endif
 
 	game.start(opts);
 
