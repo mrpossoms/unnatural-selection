@@ -1,4 +1,11 @@
-#version 410
+#version 300 es
+//#version 410
+
+#ifdef GL_ES
+precision mediump float;
+#endif
+
+
 in vec4 v_screen_pos;
 in vec3 v_normal;
 in vec2 v_uv;

@@ -1,7 +1,14 @@
-#version 410
+#version 300 es
+//#version 410
+
+#ifdef GL_ES
+precision mediump float;
+#endif
+
+
 in vec4 v_screen_pos;
 in vec2 v_uv;
-out float v_alpha;
+// in float v_alpha;
 
 uniform vec2  u_birth_death[1];
 uniform float u_alphas[1];

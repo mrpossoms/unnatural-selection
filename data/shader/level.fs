@@ -1,4 +1,13 @@
-#version 410
+#version 300 es
+//#version 410
+
+#ifdef GL_ES
+precision mediump float;
+
+
+#endif
+
+
 in vec4 v_screen_pos;
 in vec3 v_normal;
 in vec2 v_uv;
@@ -17,9 +26,9 @@ void main (void)
 	vec4 roof_textel = texture(u_roof, vec2(1.0 - v_uv.x, v_uv.y));
 	vec4 wall_textel = texture(u_wall, vec2(1.0 - v_uv.x, v_uv.y));
 
-	float wp = 1.f - abs(dot(v_normal, vec3(0, 1, 0)));
-	float fp = max(0, dot(v_normal, vec3(0, 1, 0)));
-	float rp = max(0, dot(v_normal, vec3(0, -1, 0)));
+	float wp = 1.0 - abs(dot(v_normal, vec3(0, 1, 0)));
+	float fp = max(0.0, dot(v_normal, vec3(0, 1, 0)));
+	float rp = max(0.0, dot(v_normal, vec3(0, -1, 0)));
 
 	float fog = min(1.0, 1.0/(sqrt(length(v_screen_pos.xyz))));
 

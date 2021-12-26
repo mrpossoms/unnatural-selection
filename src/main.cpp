@@ -34,10 +34,11 @@ virtual bool initialize()
 			state.player.position = { (float)r, 2.f, (float)c };
 			return true;
 		}
+
+		return false;
 	});
 
 	glDisable(GL_CULL_FACE);
-	glPointSize(4);
 
 	for (auto kvp : distances)
 	{

@@ -120,6 +120,8 @@ static void update_baddies(us::state& state, float dt)
 						best_dist = itr->second;
 					}
 				}
+
+				return false;
 			});
 
 			if (best_node)

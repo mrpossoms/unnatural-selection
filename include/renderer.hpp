@@ -273,7 +273,6 @@ struct renderer
 		}
 		// glDisable(GL_DEPTH_TEST);
 
-
 		// draw the baddies
 		// glDisable(GL_DEPTH_TEST);
 		for (unsigned i = 0; i < state.baddies.size(); i++)
@@ -434,7 +433,6 @@ struct renderer
         .draw_tri_fan();
 
 		glEnable(GL_DEPTH_TEST);
-
 	}
 };
 

@@ -88,8 +88,8 @@ level(const texture& base)
 		unsigned i = 0;
 		for (const auto& node : lymph_nodes)
 		{
-			// cells[node[0]][node[1]].node_distances[i] = 0;
-			build_nav_grid(node[0], node[1], node[0], node[1], i);
+			// build_nav_grid(node[0], node[1], node[0], node[1], i);
+			build_nav_grid_itr(node[0], node[1], i);
 			i++;
 		}
 	}
@@ -245,13 +245,66 @@ void for_each_neighbor(
 	}
 }
 
-void build_nav_grid(int x, int y, int last_x, int last_y, unsigned node_id)
+void build_nav_grid_itr(int x, int y, unsigned node_id)
+{
+	unsigned additions = 0;
+
+	if (x < 0 || y < 0 || x >= (int)width() || y >= (int)height()) { return; }
+	if (!cells[x][y].is_floor) { return; }
+
+	const auto& target_node = lymph_nodes[node_id];
+
+	do
+	{
+		additions = 0;
+
+		for (int r = 0; r < height(); r++)
+		{
+			for (int c = 0; c < width(); c++)
+			{
+				auto& me = cells[r][c];
+				if (!me.is_floor) { continue; }
+				if (me.node_distances.find(node_id) != me.node_distances.end()) { continue; }
+
+				for_each_neighbor(r, c, [&](cell& neighbor, unsigned nr, unsigned nc) -> bool {
+					auto dr = nr - r, dc = nc - c;
+					auto neighbor_dist = sqrtf(dr * dr + dc * dc);
+
+					if (nr == target_node[0] && nc == target_node[1])
+					{
+						// my neighbor is the node we are navigating to
+						me.node_distances[node_id] = neighbor_dist;
+						additions++;
+					}
+					else
+					{
+						// my neighbor has a distance to the target node
+						auto itr = neighbor.node_distances.find(node_id);
+						if (neighbor.node_distances.end() != itr)
+						{
+							me.node_distances[node_id] = neighbor_dist + neighbor.node_distances[node_id];
+							additions++;
+						}		
+					}
+
+					return false;				
+				});			
+			}
+		}		
+	}
+	while(additions > 0);
+}
+
+void build_nav_grid(int x, int y, int last_x, int last_y, unsigned node_id, unsigned depth=0)
 {
 	if (x < 0 || y < 0 || x >= (int)width() || y >= (int)height()) { return; }
 	if (!cells[x][y].is_floor) { return; }
 
 	auto itr = cells[x][y].node_distances.find(node_id);
 	if (cells[x][y].node_distances.end() != itr) { return; }
+
+
+	std::cerr << "building " << x << ", " << y << " node_id: " << node_id << " depth:" << depth << std::endl;
 
 	// TODO: if id is added, escape
 
@@ -272,7 +325,7 @@ void build_nav_grid(int x, int y, int last_x, int last_y, unsigned node_id)
 	cells[x][y].node_distances[node_id] = dist + sqrtf(dx * dx + dy * dy);
 
 	for_each_neighbor(x, y, [&](cell& cell, unsigned r, unsigned c) -> bool {
-		build_nav_grid(r, c, x, y, node_id);
+		build_nav_grid(r, c, x, y, node_id, depth+1);
 		return false;
 	});
 
