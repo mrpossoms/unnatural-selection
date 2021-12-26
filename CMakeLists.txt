@@ -2,6 +2,13 @@ cmake_minimum_required(VERSION 3.10)
 
 project(unnatural-selection VERSION 0.0.1 LANGUAGES CXX)
 
+if(CMAKE_CXX_COMPILER MATCHES "/em\\+\\+(-[a-zA-Z0-9.])?$")
+  message(" * C++ compiler: Emscripten")
+  set(CMAKE_CXX_COMPILER_ID "Emscripten")
+else()
+  message(" * C++ cimpiler: ${CMAKE_CXX_COMPILER_ID}")
+endif()
+
 set(DEFAULT_BUILD_TYPE "Debug")
 
 if(NOT CMAKE_BUILD_TYPE AND NOT CMAKE_CONFIGURATION_TYPES)
@@ -28,7 +35,7 @@ set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS} -Wall -O3")
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED True)
 
-# c++ flags
+# c++ flag
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DGL_SILENCE_DEPRECATION")
 
 # add all source files
@@ -43,7 +50,16 @@ include_directories(${PROJECT_NAME} PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/gitman_s
 # include_directories(${PROJECT_NAME} PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/gitman_sources/g.h/gitman_sources/opengametools/src)
 # include_directories(${PROJECT_NAME} PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/gitman_sources/g.h/gitman_sources/xmath.h/inc)
 
+# MINGW
+# find_package(GLUT REQUIRED)
+
+if(CMAKE_CXX_COMPILER_ID STREQUAL "Emscripten")
+# NOP
+set(CMAKE_EXE_LINKER_FLAGS "-s USE_GLFW=3 -s FULL_ES3=1 -s ALLOW_MEMORY_GROWTH=1")
+else()
 find_package(OpenGL REQUIRED)
+endif()
+
 find_package(OpenAL REQUIRED)
 
 add_executable(${PROJECT_NAME} ${SOURCE})
@@ -52,7 +68,7 @@ add_subdirectory(gitman_sources/g.h)
 
 target_link_libraries(${PROJECT_NAME} g)
 target_link_libraries(${PROJECT_NAME} glfw)
-target_link_libraries(${PROJECT_NAME} OpenGL::GL)
+# target_link_libraries(${PROJECT_NAME} OpenGL::GL)
 # target_link_libraries(${PROJECT_NAME} OpenAL::AL)
 target_link_libraries(${PROJECT_NAME} ${OPENAL_LIBRARY})
 message("openal: ${OPENAL_LIBRARY}")
