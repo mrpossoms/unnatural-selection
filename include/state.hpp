@@ -177,7 +177,7 @@ struct player : public g::game::camera_perspective
 		velocity += dir;
 	}
 
-	float randf() { return ((random() % 2048) / 1024.f) - 1.f; }
+	float randf() { return ((rand() % 2048) / 1024.f) - 1.f; }
 
 	// bool shoot(projectile& p)
 	// {
