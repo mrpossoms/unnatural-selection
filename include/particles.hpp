@@ -1,4 +1,6 @@
 #pragma once
+#include <unordered_map>
+
 #include <g.h>
 #include "nlohmann/json.hpp"
 
@@ -147,6 +149,85 @@ struct particle_system
 			    .set_camera(cam)
 			    .template draw<GL_TRIANGLES>();
 		}
+	}
+};
+
+template <typename V>
+struct gpu_particle_system : public g::game::updateable
+{
+	std::unordered_map<std::string, g::gfx::framebuffer> x; // state textures
+	std::unordered_map<std::string, g::gfx::framebuffer> dx; // state first derivatives
+
+	g::gfx::mesh<g::gfx::vertex::pos_uv_norm> quad_mesh;
+	g::gfx::mesh<V> particle_mesh;
+
+	inline unsigned capacity() const
+	{
+		return x[0].size[0] * x[0].size[1] * x[0].size[2];
+	}
+
+	// life:1, pos:3, scale:1, alpha:1,
+	// nop:1,   vel:3, dscale:1 dalpha:1
+	gpu_particle_system(std::function<void(std::vector<V>&, unsigned)> vertex_generator,
+	                    unsigned state_size=6,
+	                    unsigned capacity=1000)
+	{
+		quad_mesh = g::gfx::mesh_factory{}.plane();
+		particle_mesh = g::gfx::mesh_factory::empty_mesh<V>();
+
+		unsigned side = ceil(sqrt(capacity));
+		unsigned texture_count = ceil(state_size / 4);
+
+		for (unsigned i = 0; i < texture_count; i++)
+		{
+			auto x_tex = g::gfx::texture_factory{side, side}.components(4).type(GL_FLOAT).pixelated().create();
+			auto dx_tex = g::gfx::texture_factory{side, side}.components(4).type(GL_FLOAT).pixelated().create();
+			x["u_x" + std::to_string(i)] = g::gfx::framebuffer_factory{x_tex}.create();
+			dx["u_dx" + std::to_string(i)] = g::gfx::framebuffer_factory{dx_tex}.create();
+		}
+
+		std::vector<V> vertices;
+		for (unsigned i = 0; i < this->capacity(); i++)
+		{
+			vertex_generator(vertices, i);
+		}
+
+		particle_mesh.set_vertices(vertices);
+	}
+
+	void update(float dt, float t)
+	{
+		// render to dx textures if they change
+
+		// render to state textures
+		{
+			// start rendering using dynamics shader
+			auto chain = quad_mesh.using_shader(/*...*/)
+			             ["u_dt"].flt(dt);
+
+			for (auto& dst_name_fb_pair : x)
+			{
+				auto& x_fb = dst_name_fb_pair.second;
+
+				x_fb.bind_as_target();
+				glClear(GL_COLOR_BUFFER_BIT);
+
+				for (auto& src_x : x)
+				{
+					chain.uniform(src_x.first).texture(src_x.second.color);
+				}
+				for (auto& src_dx : dx)
+				{
+					chain.uniform(src_dx.first).texture(src_dx.second.color);
+				}
+
+				chain.template draw<GL_TRIANGLE_FAN>();
+				x_fb.unbind_as_target();
+			}
+
+
+		}
+
 	}
 };
 
