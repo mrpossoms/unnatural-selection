@@ -103,7 +103,6 @@ struct baddie : public g::dyn::particle
 
 	void take_hit(const projectile& p)
 	{
-		float roll_over = 0;
 		float base_damage = 1;
 
 		auto shield_damage = std::min<float>(shield, base_damage * damage_matrix[(size_t)p.type][trait::shield]);
@@ -122,7 +121,7 @@ struct baddie : public g::dyn::particle
 		// {
 		// 	shield -= damage_matrix[(size_t)p.type][trait::shield];
 		// 	roll_over = (shield < 0) * shield;
-			
+
 		// }
 		// if (armor > 0)
 		// {
