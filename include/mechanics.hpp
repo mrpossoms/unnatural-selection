@@ -5,6 +5,16 @@
 namespace us
 {
 
+static void spawn_particle(std::vector<vec<16>>& queue, 
+						   float life, const vec<3>& position, float scale, float alpha, float frame_offset,
+						   const vec<3>& velocity, float dscale, float dalpha)
+{
+	queue.push_back({
+		life, position[0], position[1], position[2], scale,  alpha,  frame_offset, 0,
+		-1,   velocity[0], velocity[1], velocity[2], dscale, dalpha, 0,            0
+	});
+}
+
 static void update_projectiles(us::state& state, float dt)
 {
     // update projectiles
@@ -54,7 +64,14 @@ static void update_projectiles(us::state& state, float dt)
 		    	state.impacts[i].play();
 
 				for (unsigned i = 3; i--;)
-				state.chunks.spawn(baddie.position, 0.5f, 1, vec<3>{randf(), randf(), randf()} * 4, -0.125f, 0, state.time, state.time + 10, {(rand() % 11)/11.f});
+				{
+					spawn_particle(
+						state.particle_queue["chunks"],
+						10, baddie.position, 0.5f, 1, (rand() % 11)/11.f,
+						vec<3>{randf(), randf(), randf()} * 4, -0.125f, 0
+					);
+				}
+				//state.chunks.spawn(baddie.position, 0.5f, 1, vec<3>{randf(), randf(), randf()} * 4, -0.125f, 0, state.time, state.time + 10, {(rand() % 11)/11.f});
 
 				projectile.life = 0;
 				// baddie.hp -= 1;
@@ -63,9 +80,11 @@ static void update_projectiles(us::state& state, float dt)
 				if (baddie.hp <= 0)
 				{
 					for (unsigned i = 6; i--;)
-					state.gibs.spawn(baddie.position, 1, 1, vec<3>{randf(), randf(), randf()} * 4, 0, 0, state.time, state.time + 10, {(rand() % 11)/11.f});
-					
-					state.smoke.spawn(baddie.position, 1, 0.5f, vec<3>{randf(), randf(), randf()} * 0.25f, 1.f, -0.05f, state.time, state.time + 10, {});
+					{
+						//state.gibs.spawn(baddie.position, 1, 1, vec<3>{randf(), randf(), randf()} * 4, 0, 0, state.time, state.time + 10, {(rand() % 11)/11.f});
+					}
+
+					//state.smoke.spawn(baddie.position, 1, 0.5f, vec<3>{randf(), randf(), randf()} * 0.25f, 1.f, -0.05f, state.time, state.time + 10, {});
 				}
 
 				break;

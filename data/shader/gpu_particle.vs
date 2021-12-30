@@ -29,10 +29,11 @@ void main (void)
 	vec3 position = x0.yzw;
 	float scale = x1.x;
 	v_alpha = x1.y;
+	float frame_offset = x1.z;
 
 	vec4 v_world_pos = vec4(position, 1.0);
 	v_screen_pos = (u_proj * u_view * v_world_pos) + vec4(a_position * scale, 0.0);
 	gl_Position = v_screen_pos;
 
-	v_uv = (a_uv * u_frame_dims);// + u_uv_offset;
+	v_uv = a_uv * (u_frame_dims * vec2(frame_offset, 1.0));// + u_uv_offset;
 }

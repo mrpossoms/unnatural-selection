@@ -219,9 +219,15 @@ struct state
 
 	std::vector<vec<12>> particle_spawn_queue;
 
-	particle_system<128> gibs;
-	particle_system<128> smoke;
-	particle_system<128> chunks;
+
+
+	// particle_system<128> gibs;
+	// particle_system<128> smoke;
+	// particle_system<128> chunks;
+	// std::vector<vec<12>> gibs_queue, smoke_queue, chunks_queue;
+
+	std::unordered_map<std::string, std::vector<vec<16>>> particle_queue;
+
 	g::snd::source ambient;
 	g::snd::source wave_start;
 	g::snd::source_ring virus_sounds;

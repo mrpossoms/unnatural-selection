@@ -209,9 +209,9 @@ struct gpu_backend : public g::game::updateable
 		return vec<2>{c, r} * particle_stride;
 	}
 
-	// life:1, pos:3, scale:1, alpha:1,
+	// life:1, pos:3, scale:1, alpha:1, reserved: 1, reserved: 1,
 	// nop:1,   vel:3, dscale:1 dalpha:1
-	gpu_backend(unsigned state_size=3, unsigned capacity=1000)
+	gpu_backend(unsigned state_size=8, unsigned capacity=1000)
 	{
 		const std::string quad_vs =
 		"precision mediump float;"
@@ -333,7 +333,6 @@ struct gpu_backend : public g::game::updateable
 		glEnable(GL_BLEND);
 
 		next_particle = (next_particle + 1) % capacity();
-		std::cerr << next_particle << " " << particle_coordinate(next_particle).to_string() << std::endl;
 	}
 };
 
