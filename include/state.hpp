@@ -217,7 +217,7 @@ struct state
 	std::vector<us::baddie> baddies;
 	std::vector<us::baddie> next_generation;
 
-	std::vector<vec<6>> particle_spawn_queue;
+	std::vector<vec<12>> particle_spawn_queue;
 
 	particle_system<128> gibs;
 	particle_system<128> smoke;

@@ -222,7 +222,7 @@ struct renderer
 			state.smoke.initialize(get_sprite("Smoke"));
 			state.chunks.initialize(get_sprite("chunks"));
 
-			ps = std::make_shared<us::particles::gpu_backend>(3, 1000000);
+			ps = std::make_shared<us::particles::gpu_backend>(6, 1001);
 			ps_mesh = std::make_shared<us::particles::gpu_mesh<>>(*ps);
 		}
 
@@ -237,7 +237,7 @@ struct renderer
 		{
 
 			ps->spawn(state.particle_spawn_queue[state.particle_spawn_queue.size()-1].v,
-				      state.particle_spawn_queue[state.particle_spawn_queue.size()-1].v + 3);
+				      state.particle_spawn_queue[state.particle_spawn_queue.size()-1].v + 6);
 			state.particle_spawn_queue.pop_back();
 		}
 
@@ -348,16 +348,16 @@ struct renderer
 		state.gibs.draw(assets.shader("particle.vs+particle.fs"), assets.tex("particles.png"), state.player, state.time);
 		state.chunks.draw(assets.shader("particle.vs+particle.fs"), assets.tex("chunks.png"), state.player, state.time);
 
-		glDisable(GL_DEPTH_TEST);
+		// glDisable(GL_DEPTH_TEST);
 		ps_mesh->mesh.using_shader(assets.shader("gpu_particle.vs+gpu_particle.fs"))
 		.set_camera(state.player)
 		["u_sprite_sheet"].texture(assets.tex("particles.png"))
 		// ["u_uv_offset"].vec2(uv_offsets[i])//, CAP)
-		//["u_frame_dims"].vec2(get_sprite("particles").frame_dims)
+		["u_frame_dims"].vec2(get_sprite("particles").frame_dims)
 		["u_x0"].texture(ps->x[0].color)
-		//["u_x1"].texture(ps->x[1].color)
+		["u_x1"].texture(ps->x[1].color)
 	    .draw<GL_TRIANGLES>();
-		glEnable(GL_DEPTH_TEST);
+		// glEnable(GL_DEPTH_TEST);
 
 		glDepthMask(GL_FALSE);
 		state.smoke.draw(assets.shader("particle.vs+particle.fs"), assets.tex("smoke.png"), state.player, state.time);
@@ -432,7 +432,7 @@ struct renderer
 			["u_view"].mat4(mat4::I())
 			["u_proj"].mat4(state.player.projection())
 			["u_texture"].texture(ps->x[0].color)
-			["u_color"].vec4({0, 0, 0, 1})
+			//["u_color"].vec4({0, 0, 0, 1})
 			["u_border_thickness"].flt(0.1)
 			.draw_tri_fan();
 

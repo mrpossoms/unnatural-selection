@@ -22,7 +22,7 @@ void main (void)
 	color.rgb *= fog;
 	color.a *= v_alpha;
 
-	color = vec4(0.0, 0.0, 1.0, 1.0);
+	// color = vec4(0.0, 0.0, 1.0, 1.0);
 
 	if (color.a < 0.01) { discard; }
 }

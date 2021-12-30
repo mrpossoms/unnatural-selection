@@ -322,7 +322,7 @@ struct gpu_backend : public g::game::updateable
 			auto chain = quad_mesh.using_shader(spawn_shader);
 			for (unsigned i = 0; i < dx.size(); i++)
 			{
-				auto data = vec<4>{ dx_0 + std::min<int>(state_size, i * 4) };// *0.001f;
+				auto data = vec<4>{ dx_0 + std::min<int>(state_size, i * 4) };
 				dx[i].bind_as_target();
 				chain["u_x0"].vec4(data);
 				chain["u_particle_coord"].vec2(particle_coordinate(next_particle));

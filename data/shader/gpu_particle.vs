@@ -29,9 +29,9 @@ void main (void)
 	vec4 x1 = texture(u_x1, a_index);
 
 	float life = x0.x;
-	vec3 position = x0.xyz * 1.0;
-	float scale = 1.0;//x1.x;
-	float alpha = x1.y;
+	vec3 position = x0.yzw;
+	float scale = x1.x;
+	v_alpha = x1.y;
 
 	vec4 v_world_pos = vec4(position, 1.0);
 	v_screen_pos = (u_proj * u_view * v_world_pos) + vec4(a_position * scale, 0.0);
