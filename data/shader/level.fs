@@ -1,10 +1,5 @@
-#version 300 es
-//#version 410
-
 #ifdef GL_ES
 precision mediump float;
-
-
 #endif
 
 
@@ -21,7 +16,7 @@ out vec4 color;
 void main (void)
 {
 	// color = vec4(v_normal * 0.5 + vec3(0.5), 1.0);
-	
+
 	vec4 floor_textel = texture(u_floor, vec2(1.0 - v_uv.x, v_uv.y));
 	vec4 roof_textel = texture(u_roof, vec2(1.0 - v_uv.x, v_uv.y));
 	vec4 wall_textel = texture(u_wall, vec2(1.0 - v_uv.x, v_uv.y));

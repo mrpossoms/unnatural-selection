@@ -1,6 +1,3 @@
-#version 300 es
-//#version 410
-
 #ifdef GL_ES
 precision highp float;
 #endif
@@ -10,7 +7,7 @@ in vec2 a_uv;
 in vec2 a_index;
 
 uniform sampler2D u_x0;
-uniform sampler2D u_x1; 
+uniform sampler2D u_x1;
 
 uniform vec2 u_frame_dims;
 uniform mat4 u_view;

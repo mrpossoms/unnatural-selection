@@ -213,7 +213,7 @@ struct gpu_backend : public g::game::updateable
 	// nop:1,   vel:3, dscale:1 dalpha:1
 	gpu_backend(unsigned state_size=3, unsigned capacity=1000)
 	{
-		const std::string quad_vs = "#version 300 es\n"
+		const std::string quad_vs =
 		"precision mediump float;"
 		"in vec3 a_position;"
 		"in vec2 a_uv;"
@@ -225,7 +225,7 @@ struct gpu_backend : public g::game::updateable
 		"	v_uv = a_uv;"
 		"}";
 
-		const std::string dynamics_fs = "#version 300 es\n"
+		const std::string dynamics_fs =
 		"precision mediump float;"
 		"in vec2 v_uv;"
 		"out vec4 color;"
@@ -238,7 +238,7 @@ struct gpu_backend : public g::game::updateable
 		"	color = texture(u_x, v_uv) + texture(u_dx, v_uv) * u_dt;"
 		"}";
 
-		const std::string spawn_fs = "#version 300 es\n"
+		const std::string spawn_fs =
 		"precision mediump float;"
 		"in vec2 v_uv;"
 		"uniform vec4 u_x0;"

@@ -1,6 +1,3 @@
-#version 300 es
-//#version 410
-
 #ifdef GL_ES
 precision mediump float;
 #endif
@@ -19,7 +16,7 @@ void main (void)
     vec4 tex_color = texture(u_texture, vec2(1.0) - v_uv);
 
     color = u_color;
-    
+
     color += tex_color;
 
     float bt = u_border_thickness;

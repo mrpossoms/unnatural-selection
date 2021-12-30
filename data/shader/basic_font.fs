@@ -1,6 +1,3 @@
-#version 300 es
-//#version 410
-
 #ifdef GL_ES
 precision mediump float;
 #endif
