@@ -17,6 +17,15 @@ static void update_projectiles(us::state& state, float dt)
 
 	    if (hit_level)
 	    {
+			// state.particle_spawn_queue.push_back(
+			// 	vec<12>{10, new_pos[0], new_pos[1], new_pos[0], 1, 1,
+			// 		    1, 0, 1, 0, 0, 0}
+			// );
+			state.particle_spawn_queue.push_back(
+				vec<6>{new_pos[0], new_pos[1], new_pos[2],0, 1, 0}
+			);
+
+
 	    	auto i = rand() % 2;
 	    	state.wall_impacts[i].position(projectile.position);
 	    	state.wall_impacts[i].play();

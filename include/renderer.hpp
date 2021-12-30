@@ -15,8 +15,8 @@ struct renderer
 	g::gfx::mesh<g::gfx::vertex::pos_uv_norm> billboard_mesh;
 	std::unordered_map<std::string, sprite> sprites;
 	std::unordered_map<std::string, nlohmann::json> json;
-	std::shared_ptr<us::gpu_particle_system> ps = nullptr;
-
+	std::shared_ptr<us::particles::gpu_backend> ps = nullptr;
+	std::shared_ptr<us::particles::gpu_mesh<>> ps_mesh = nullptr;
 
 	void draw_onboarding(g::asset::store& assets, us::state& state)
 	{
@@ -222,7 +222,8 @@ struct renderer
 			state.smoke.initialize(get_sprite("Smoke"));
 			state.chunks.initialize(get_sprite("chunks"));
 
-			ps = std::make_shared<us::gpu_particle_system>();
+			ps = std::make_shared<us::particles::gpu_backend>(3, 1000000);
+			ps_mesh = std::make_shared<us::particles::gpu_mesh<>>(*ps);
 		}
 
 		if (!billboard_mesh.is_initialized())
@@ -231,6 +232,14 @@ struct renderer
 		}
 
 		ps->update(0.1f, state.time);
+
+		while(state.particle_spawn_queue.size() > 0)
+		{
+
+			ps->spawn(state.particle_spawn_queue[state.particle_spawn_queue.size()-1].v,
+				      state.particle_spawn_queue[state.particle_spawn_queue.size()-1].v + 3);
+			state.particle_spawn_queue.pop_back();
+		}
 
 		glClearColor(0, 0, 0, 1);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -338,7 +347,17 @@ struct renderer
 
 		state.gibs.draw(assets.shader("particle.vs+particle.fs"), assets.tex("particles.png"), state.player, state.time);
 		state.chunks.draw(assets.shader("particle.vs+particle.fs"), assets.tex("chunks.png"), state.player, state.time);
-						
+
+		glDisable(GL_DEPTH_TEST);
+		ps_mesh->mesh.using_shader(assets.shader("gpu_particle.vs+gpu_particle.fs"))
+		.set_camera(state.player)
+		["u_sprite_sheet"].texture(assets.tex("particles.png"))
+		// ["u_uv_offset"].vec2(uv_offsets[i])//, CAP)
+		//["u_frame_dims"].vec2(get_sprite("particles").frame_dims)
+		["u_x0"].texture(ps->x[0].color)
+		//["u_x1"].texture(ps->x[1].color)
+	    .draw<GL_TRIANGLES>();
+		glEnable(GL_DEPTH_TEST);
 
 		glDepthMask(GL_FALSE);
 		state.smoke.draw(assets.shader("particle.vs+particle.fs"), assets.tex("smoke.png"), state.player, state.time);
@@ -360,7 +379,6 @@ struct renderer
 		const std::string gun_json[3] = {
 			"gun_carbine", "gun_laser", "gun_shotty"
 		};
-
 
 		auto& gun_sprite = get_sprite(gun_json[state.player.selected_weapon]);
 		assets.geo("gun_plane.obj").using_shader(assets.shader("level.vs+animated_sprite.fs"))
@@ -408,6 +426,23 @@ struct renderer
         ["u_texture"].texture(assets.tex(gun_reticles[state.player.selected_weapon]))
         ["u_border_thickness"].flt(0)
         .draw_tri_fan();
+
+		auto x0 = root.child({ 0.2, 0.2 }, { -0.5, 0, -1 });
+		x0.using_shader()
+			["u_view"].mat4(mat4::I())
+			["u_proj"].mat4(state.player.projection())
+			["u_texture"].texture(ps->x[0].color)
+			["u_color"].vec4({0, 0, 0, 1})
+			["u_border_thickness"].flt(0.1)
+			.draw_tri_fan();
+
+		auto x1 = root.child({ 0.2, 0.2 }, { -1, 0, -1 });
+		x1.using_shader()
+			["u_view"].mat4(mat4::I())
+			["u_proj"].mat4(state.player.projection())
+			["u_texture"].texture(ps->dx[0].color)
+			["u_border_thickness"].flt(0.1)
+			.draw_tri_fan();
 
         auto gun_ui = root.child(vec<2>{0.3, 0.1} * 1.1f, {1.5, -1.5f, -1});
         // gun_ui.using_shader()

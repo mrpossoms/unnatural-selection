@@ -184,7 +184,7 @@ int main (int argc, const char* argv[])
 	opts.gfx.width = canvas_get_width();
 	opts.gfx.height = canvas_get_height();
 #else
-	opts.gfx.fullscreen = true;
+	opts.gfx.fullscreen = false;
 #endif
 
 	game.start(opts);

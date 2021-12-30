@@ -155,7 +155,32 @@ struct particle_system
 namespace particles
 {
 
-template <size_t STATE_SIZE=6>
+struct vertex
+{
+	vec<3> position;
+	vec<2> uv;
+	vec<2> index;
+
+	static void attributes(GLuint prog)
+	{
+		auto pos_loc = glGetAttribLocation(prog, "a_position");
+		auto uv_loc = glGetAttribLocation(prog, "a_uv");
+		auto idx_loc = glGetAttribLocation(prog, "a_index");
+
+		if (pos_loc > -1) glEnableVertexAttribArray(pos_loc);
+		if (uv_loc > -1) glEnableVertexAttribArray(uv_loc);
+		if (idx_loc > -1) glEnableVertexAttribArray(idx_loc);
+
+		auto p_size = sizeof(position);
+		auto uv_size = sizeof(uv);
+
+		if (pos_loc > -1) glVertexAttribPointer(pos_loc, 3, GL_FLOAT, false, sizeof(particles::vertex), (void*)0);
+		if (uv_loc > -1) glVertexAttribPointer(uv_loc, 2, GL_FLOAT, false, sizeof(particles::vertex), (void*)p_size);
+		if (idx_loc > -1) glVertexAttribPointer(idx_loc, 2, GL_FLOAT, false, sizeof(particles::vertex), (void*)(p_size + uv_size));
+	}
+};
+
+
 struct gpu_backend : public g::game::updateable
 {
 	std::vector<g::gfx::framebuffer> x; // state textures
@@ -166,19 +191,27 @@ struct gpu_backend : public g::game::updateable
 	g::gfx::shader dynamics_shader;
 	g::gfx::shader spawn_shader;
 
-	vec<2> particle_stride;
+	vec<2> particle_stride = {};
 
 	unsigned next_particle = 0;
-
+	unsigned state_size = 0;
 
 	inline unsigned capacity() const
 	{
-		return x[0].size[0] * x[0].size[1] * x[0].size[2];
+		return x[0].color.size[0] * x[0].color.size[1] * x[0].color.size[2];
+	}
+
+	inline vec<2> particle_coordinate(unsigned index)
+	{
+		float r = index / x[0].size[0];
+		float c = index % x[0].size[1];
+
+		return vec<2>{c, r} * particle_stride;
 	}
 
 	// life:1, pos:3, scale:1, alpha:1,
 	// nop:1,   vel:3, dscale:1 dalpha:1
-	gpu_particle_system(unsigned capacity=1000)
+	gpu_backend(unsigned state_size=3, unsigned capacity=1000)
 	{
 		const std::string quad_vs = "#version 300 es\n"
 		"precision mediump float;"
@@ -188,6 +221,7 @@ struct gpu_backend : public g::game::updateable
 		""
 		"void main (void)"
 		"{"
+		"	gl_Position = vec4(a_position, 1.0);"
 		"	v_uv = a_uv;"
 		"}";
 
@@ -208,11 +242,13 @@ struct gpu_backend : public g::game::updateable
 		"precision mediump float;"
 		"in vec2 v_uv;"
 		"uniform vec4 u_x0;"
+		"uniform vec2 u_particle_coord;"
 		"out vec4 color;"
 		""
 		"void main (void)"
 		"{"
-		"	color = u_x0;"
+		"   if (length(u_particle_coord - v_uv) < (0.03)) { color = u_x0; }"
+		"	else { discard; }"
 		"}";
 
 		quad_mesh = g::gfx::mesh_factory{}.plane();
@@ -226,9 +262,9 @@ struct gpu_backend : public g::game::updateable
 		                                       .create();
 
 		unsigned side = ceil(sqrt(capacity));
-		unsigned texture_count = ceil(STATE_SIZE / 4);
+		unsigned texture_count = ceil(state_size / 4.f);
 
-		particle_stride = vec<2>{side, side} / 1.f;
+		particle_stride = vec<2>{1.f / (float)side, 1.f / (float)side};
 
 		for (unsigned i = 0; i < texture_count; i++)
 		{
@@ -237,6 +273,8 @@ struct gpu_backend : public g::game::updateable
 			x.push_back(g::gfx::framebuffer_factory{x_tex}.create());
 			dx.push_back(g::gfx::framebuffer_factory{dx_tex}.create());
 		}
+
+		this->state_size = state_size;
 	}
 
 	void update(float dt, float t)
@@ -248,33 +286,97 @@ struct gpu_backend : public g::game::updateable
 			// start rendering using dynamics shader
 			auto chain = quad_mesh.using_shader(dynamics_shader)
 			             ["u_dt"].flt(dt);
-
+			glDisable(GL_BLEND);
 			for (unsigned i = 0; i < x.size(); i++)
 			{
 				x[i].bind_as_target();
-				glClear(GL_COLOR_BUFFER_BIT);
 				chain["u_x"].texture(x[i].color);
 				chain["u_dx"].texture(dx[i].color);
 				chain.template draw<GL_TRIANGLE_FAN>();
 				x[i].unbind_as_target();
 			}
+			glEnable(GL_BLEND);
 		}
 	}
 
-	void spawn(const vec<STATE_SIZE> x_0)
+	void spawn(const float* x_0, const float* dx_0)
 	{
-		auto chain = quad_mesh.using_shader(spawn_shader)
-		int offset = 0;
-		for (unsigned i = 0; i < x.size(); i++)
+		//glBlendFunc(GL_ONE, GL_ZERO);
+		glDisable(GL_BLEND);
 		{
-			x[i].bind_as_target();
-			glClear(GL_COLOR_BUFFER_BIT);
-			chain["u_x0"].vec4(vec<4>{x_0.v + std::min<int>(STATE_SIZE, i * 4)});
-			chain.template draw<GL_TRIANGLE_FAN>();
-			x[i].unbind_as_target();
-		}	
+			auto chain = quad_mesh.using_shader(spawn_shader);
+			for (unsigned i = 0; i < x.size(); i++)
+			{
+				auto data = vec<4>{ x_0 + std::min<int>(state_size, i * 4) };// *0.001f;
+				x[i].bind_as_target();
+				//glClearColor(1, 0, 0, 1);
+				//glClear(GL_COLOR_BUFFER_BIT);
+				chain["u_x0"].vec4(data);
+				chain["u_particle_coord"].vec2(particle_coordinate(next_particle));
+				chain.template draw<GL_TRIANGLE_FAN>();
+				x[i].unbind_as_target();
+			}
+		}
 
-		next_particle = (next_particle + 1) % STATE_SIZE;
+		{
+			auto chain = quad_mesh.using_shader(spawn_shader);
+			for (unsigned i = 0; i < dx.size(); i++)
+			{
+				auto data = vec<4>{ dx_0 + std::min<int>(state_size, i * 4) };// *0.001f;
+				dx[i].bind_as_target();
+				chain["u_x0"].vec4(data);
+				chain["u_particle_coord"].vec2(particle_coordinate(next_particle));
+				chain.template draw<GL_TRIANGLE_FAN>();
+				dx[i].unbind_as_target();
+			}
+		}
+		glEnable(GL_BLEND);
+
+		next_particle = (next_particle + 1) % capacity();
+		std::cerr << next_particle << " " << particle_coordinate(next_particle).to_string() << std::endl;
+	}
+};
+
+
+template <typename V=particles::vertex>
+struct gpu_mesh
+{
+	g::gfx::mesh<V> mesh;
+
+	using mesh_generator = std::function<void(std::vector<V>& vertices, std::vector<uint32_t>& indices, const vec<2>& index)>;
+
+	gpu_mesh(gpu_backend& backend, mesh_generator generator=nullptr)
+	{
+		mesh = g::gfx::mesh_factory::empty_mesh<V>();
+		std::vector<V> vertices;
+		std::vector<uint32_t> indices;
+
+		if (generator == nullptr)
+		{
+			generator = [](std::vector<V>& vertices, std::vector<uint32_t>& indices, const vec<2>& index) {
+				const auto s = 0.5f;
+				auto n = vertices.size();
+				vertices.push_back({{-s,-s, 0 }, {1, 1}, index});
+				vertices.push_back({{ s,-s, 0 }, {0, 1}, index});
+				vertices.push_back({{ s, s, 0 }, {0, 0}, index});
+				vertices.push_back({{-s, s, 0 }, {1, 0}, index});
+
+				indices.push_back(n + 0);
+				indices.push_back(n + 3);
+				indices.push_back(n + 2);
+				indices.push_back(n + 0);
+				indices.push_back(n + 2);
+				indices.push_back(n + 1);
+			};
+		}
+
+		for (unsigned i = 0; i < backend.capacity(); i++)
+		{
+			generator(vertices, indices, backend.particle_coordinate(i));
+		}
+
+		mesh.set_vertices(vertices);
+		mesh.set_indices(indices);
 	}
 };
 
