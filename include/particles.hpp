@@ -152,38 +152,24 @@ struct particle_system
 	}
 };
 
-template <typename V>
-struct gpu_particle_system : public g::game::updateable
+namespace particles
+{
+
+template <size_t STATE_SIZE=6>
+struct gpu_backend : public g::game::updateable
 {
 	std::vector<g::gfx::framebuffer> x; // state textures
 	std::vector<g::gfx::framebuffer> dx; // state first derivatives
 
 	g::gfx::mesh<g::gfx::vertex::pos_uv_norm> quad_mesh;
-	g::gfx::mesh<V> particle_mesh;
 
 	g::gfx::shader dynamics_shader;
+	g::gfx::shader spawn_shader;
 
-	const std::string dynamics_vs = "\n"
-	"in vec3 a_position;"
-	"inout vec2 a_uv;"
-	"out vec2 v_uv;"
-	""
-	"void main (void)"
-	"{"
-	"	v_uv = a_uv;"
-	"}";
+	vec<2> particle_stride;
 
-	const std::string dynamics_fs = "\n"
-	"in vec2 v_uv;"
-	"out vec4 color;"
-	"uniform sampler2D u_x;"
-	"uniform sampler2D u_dx;"
-	"uniform float u_dt;"
-	""
-	"void main (void)"
-	"{"
-	"	color = texture(u_x, v_uv) + texture(u_dx, v_uv) * u_dt;"
-	"}";
+	unsigned next_particle = 0;
+
 
 	inline unsigned capacity() const
 	{
@@ -192,19 +178,57 @@ struct gpu_particle_system : public g::game::updateable
 
 	// life:1, pos:3, scale:1, alpha:1,
 	// nop:1,   vel:3, dscale:1 dalpha:1
-	gpu_particle_system(std::function<void(std::vector<V>&, unsigned)> vertex_generator,
-	                    unsigned state_size=6,
-	                    unsigned capacity=1000)
+	gpu_particle_system(unsigned capacity=1000)
 	{
-		quad_mesh = g::gfx::mesh_factory{}.plane();
-		particle_mesh = g::gfx::mesh_factory::empty_mesh<V>();
+		const std::string quad_vs = "#version 300 es\n"
+		"precision mediump float;"
+		"in vec3 a_position;"
+		"in vec2 a_uv;"
+		"out vec2 v_uv;"
+		""
+		"void main (void)"
+		"{"
+		"	v_uv = a_uv;"
+		"}";
 
-		dynamics_shader = g::gfx::shader_factory{}.template add_src<GL_VERTEX_SHADER>(dynamics_vs)
+		const std::string dynamics_fs = "#version 300 es\n"
+		"precision mediump float;"
+		"in vec2 v_uv;"
+		"out vec4 color;"
+		"uniform sampler2D u_x;"
+		"uniform sampler2D u_dx;"
+		"uniform float u_dt;"
+		""
+		"void main (void)"
+		"{"
+		"	color = texture(u_x, v_uv) + texture(u_dx, v_uv) * u_dt;"
+		"}";
+
+		const std::string spawn_fs = "#version 300 es\n"
+		"precision mediump float;"
+		"in vec2 v_uv;"
+		"uniform vec4 u_x0;"
+		"out vec4 color;"
+		""
+		"void main (void)"
+		"{"
+		"	color = u_x0;"
+		"}";
+
+		quad_mesh = g::gfx::mesh_factory{}.plane();
+
+		dynamics_shader = g::gfx::shader_factory{}.template add_src<GL_VERTEX_SHADER>(quad_vs)
 		                                          .template add_src<GL_FRAGMENT_SHADER>(dynamics_fs)
 		                                          .create();
 
+		spawn_shader = g::gfx::shader_factory{}.template add_src<GL_VERTEX_SHADER>(quad_vs)
+		                                       .template add_src<GL_FRAGMENT_SHADER>(spawn_fs)
+		                                       .create();
+
 		unsigned side = ceil(sqrt(capacity));
-		unsigned texture_count = ceil(state_size / 4);
+		unsigned texture_count = ceil(STATE_SIZE / 4);
+
+		particle_stride = vec<2>{side, side} / 1.f;
 
 		for (unsigned i = 0; i < texture_count; i++)
 		{
@@ -213,13 +237,6 @@ struct gpu_particle_system : public g::game::updateable
 			x.push_back(g::gfx::framebuffer_factory{x_tex}.create());
 			dx.push_back(g::gfx::framebuffer_factory{dx_tex}.create());
 		}
-
-		std::vector<V> vertices;
-		for (unsigned i = 0; i < this->capacity(); i++)
-		{
-			vertex_generator(vertices, i);
-		}
-		particle_mesh.set_vertices(vertices);
 	}
 
 	void update(float dt, float t)
@@ -229,20 +246,38 @@ struct gpu_particle_system : public g::game::updateable
 		// render to state textures
 		{
 			// start rendering using dynamics shader
-			auto chain = quad_mesh.using_shader(/*...*/)
+			auto chain = quad_mesh.using_shader(dynamics_shader)
 			             ["u_dt"].flt(dt);
 
 			for (unsigned i = 0; i < x.size(); i++)
 			{
 				x[i].bind_as_target();
 				glClear(GL_COLOR_BUFFER_BIT);
-				chain.uniform("u_x").texture(x[i].color);
-				chain.uniform("u_dx").texture(dx[i].color);
+				chain["u_x"].texture(x[i].color);
+				chain["u_dx"].texture(dx[i].color);
 				chain.template draw<GL_TRIANGLE_FAN>();
 				x[i].unbind_as_target();
 			}
 		}
 	}
+
+	void spawn(const vec<STATE_SIZE> x_0)
+	{
+		auto chain = quad_mesh.using_shader(spawn_shader)
+		int offset = 0;
+		for (unsigned i = 0; i < x.size(); i++)
+		{
+			x[i].bind_as_target();
+			glClear(GL_COLOR_BUFFER_BIT);
+			chain["u_x0"].vec4(vec<4>{x_0.v + std::min<int>(STATE_SIZE, i * 4)});
+			chain.template draw<GL_TRIANGLE_FAN>();
+			x[i].unbind_as_target();
+		}	
+
+		next_particle = (next_particle + 1) % STATE_SIZE;
+	}
 };
+
+} // namespace particles
 
 }

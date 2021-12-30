@@ -15,6 +15,8 @@ struct renderer
 	g::gfx::mesh<g::gfx::vertex::pos_uv_norm> billboard_mesh;
 	std::unordered_map<std::string, sprite> sprites;
 	std::unordered_map<std::string, nlohmann::json> json;
+	std::shared_ptr<us::gpu_particle_system> ps = nullptr;
+
 
 	void draw_onboarding(g::asset::store& assets, us::state& state)
 	{
@@ -219,12 +221,16 @@ struct renderer
 			state.gibs.initialize(get_sprite("particles"));
 			state.smoke.initialize(get_sprite("Smoke"));
 			state.chunks.initialize(get_sprite("chunks"));
+
+			ps = std::make_shared<us::gpu_particle_system>();
 		}
 
 		if (!billboard_mesh.is_initialized())
 		{
 			billboard_mesh = g::gfx::mesh_factory::plane();
 		}
+
+		ps->update(0.1f, state.time);
 
 		glClearColor(0, 0, 0, 1);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);

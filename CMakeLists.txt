@@ -57,7 +57,7 @@ if(CMAKE_CXX_COMPILER_ID STREQUAL "Emscripten")
 # NOP
 set(CMAKE_EXE_LINKER_FLAGS "-s USE_GLFW=3 -s FULL_ES3=1 -s ALLOW_MEMORY_GROWTH=1")
 else()
-find_package(OpenGL REQUIRED)
+# find_package(OpenGL REQUIRED)
 endif()
 
 find_package(OpenAL REQUIRED)
@@ -74,6 +74,11 @@ target_link_libraries(${PROJECT_NAME} ${OPENAL_LIBRARY})
 message("openal: ${OPENAL_LIBRARY}")
 
 if (WIN32)
+set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} /MT")
+set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} /MTd")
+set(CMAKE_C_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} /MT")
+set(CMAKE_C_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} /MTd")
+  
 message(STATUS ">>> Will copy data directory")
 add_custom_command(TARGET ${PROJECT_NAME} PRE_BUILD
                    COMMAND cmake -E copy_directory
