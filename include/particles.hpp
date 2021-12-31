@@ -196,6 +196,8 @@ struct gpu_backend : public g::game::updateable
 	unsigned next_particle = 0;
 	unsigned state_size = 0;
 
+	bool has_cleared_fbs = false;
+
 	inline unsigned capacity() const
 	{
 		return x[0].color.size[0] * x[0].color.size[1] * x[0].color.size[2];
@@ -274,7 +276,26 @@ struct gpu_backend : public g::game::updateable
 			dx.push_back(g::gfx::framebuffer_factory{dx_tex}.create());
 		}
 
+		// clear the textures of possibly uninitialized data
+		for (unsigned i = 0; i < texture_count; i++)
+		{
+			x[i].bind_as_target();
+			glClearColor(0, 0, 0, 0);
+			glClear(GL_COLOR_BUFFER_BIT);
+			x[i].unbind_as_target();
+
+			dx[i].bind_as_target();
+			glClearColor(0, 0, 0, 0);
+			glClear(GL_COLOR_BUFFER_BIT);
+			dx[i].unbind_as_target();
+		}
+
 		this->state_size = state_size;
+	}
+
+	~gpu_backend()
+	{
+		// TODO
 	}
 
 	void update(float dt, float t)

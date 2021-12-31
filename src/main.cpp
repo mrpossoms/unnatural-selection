@@ -138,15 +138,15 @@ virtual void update(float dt)
 
     state.player.orientation = state.player.get_orientation();
 
-	renderer.draw(assets, state);
+	renderer.draw(assets, state, dt);
 
  	state.time += dt;
  	frame++;
 
     state.ambient.update();
     state.virus_sounds.update();
-	
-	for (unsigned i = 0; i < 2; i++)    
+
+	for (unsigned i = 0; i < 2; i++)
     state.wall_impacts[i].update();
 
     for (unsigned i = 0; i < 8; i++)

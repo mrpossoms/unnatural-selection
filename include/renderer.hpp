@@ -18,7 +18,7 @@ struct renderer
 	// std::shared_ptr<us::particles::gpu_backend> ps = nullptr;
 	std::shared_ptr<us::particles::gpu_mesh<>> ps_mesh = nullptr;
 
-	std::unordered_map<std::string, std::shared_ptr<us::particles::gpu_backend>> particle_backends;
+	std::map<std::string, std::shared_ptr<us::particles::gpu_backend>> particle_backends;
 
 	void draw_onboarding(g::asset::store& assets, us::state& state)
 	{
@@ -211,19 +211,21 @@ struct renderer
 		return sprites[name + ".json"];
 	}
 
-	void draw(g::asset::store& assets, us::state& state)
+	void draw(g::asset::store& assets, us::state& state, float dt)
 	{
 		if (state.level->hash != level_hash)
 		{
 			build_level_mesh(state.level);
 		}
 
-		// if (!state.gibs.particles_mesh.is_initialized())
-		// {
-		// 	state.gibs.initialize(get_sprite("particles"));
-		// 	state.smoke.initialize(get_sprite("Smoke"));
-		// 	state.chunks.initialize(get_sprite("chunks"));
-		// }
+		if (nullptr == ps_mesh)
+		{
+			// state.gibs.initialize(get_sprite("particles"));
+			// state.smoke.initialize(get_sprite("Smoke"));
+			// state.chunks.initialize(get_sprite("chunks"));
+			// ps = std::make_shared<us::particles::gpu_backend>(8, 1000);
+			// ps_mesh = std::make_shared<us::particles::gpu_mesh<>>(*ps);
+		}
 
 		if (!billboard_mesh.is_initialized())
 		{
@@ -233,38 +235,41 @@ struct renderer
 		// update and spawn particles
 		for (auto& pq_kvp : state.particle_queue)
 		{
+			const auto& name = pq_kvp.first;
+			auto& spawn_queue = pq_kvp.second;
+
 			// check to see if the particle system has been initialized, if not create it
-			auto& itr = particle_backends.find(pq_kvp.first);
+			const auto& itr = particle_backends.find(name);
 			if (itr == particle_backends.end())
 			{
-				particle_backends[pq_kvp.first] = std::make_shared<us::particles::gpu_backend>(8, 512);
+				particle_backends[name] = std::make_shared<us::particles::gpu_backend>(8, 1000);
 
 				if (nullptr == ps_mesh)
 				{
-					ps_mesh = std::make_shared<us::particles::gpu_mesh<>>(*particle_backends[pq_kvp.first]);
+					ps_mesh = std::make_shared<us::particles::gpu_mesh<>>(*particle_backends[name]);
 				}
 			}
 
-			auto ps = particle_backends[pq_kvp.first];
+			auto& backend = particle_backends[name];
 
 			// spawn any particles that are in line
-			while (pq_kvp.second.size() > 0)
+			while (spawn_queue.size() > 0)
 			{
-				ps->spawn(pq_kvp.second[pq_kvp.second.size()-1].v,
-					      pq_kvp.second[pq_kvp.second.size()-1].v + 6);
-				pq_kvp.second.pop_back();
+				backend->spawn(spawn_queue[spawn_queue.size()-1].v,
+					      spawn_queue[spawn_queue.size()-1].v + backend->state_size);
+				spawn_queue.pop_back();
 			}
 
-			ps->update(0.1f, state.time);
+			backend->update(dt, state.time);
 		}
 
-		// ps->update(0.1f, state.time);
+		// ps->update(dt, state.time);
 
 		// while(state.particle_spawn_queue.size() > 0)
 		// {
 
 		// 	ps->spawn(state.particle_spawn_queue[state.particle_spawn_queue.size()-1].v,
-		// 		      state.particle_spawn_queue[state.particle_spawn_queue.size()-1].v + 6);
+		// 		      state.particle_spawn_queue[state.particle_spawn_queue.size()-1].v + 8);
 		// 	state.particle_spawn_queue.pop_back();
 		// }
 
@@ -383,21 +388,25 @@ struct renderer
 		// draw particles
 		for (auto& pb_kvp : particle_backends)
 		{
+			if (pb_kvp.first == "smoke") { glDepthMask(GL_FALSE); }
 			ps_mesh->mesh.using_shader(assets.shader("gpu_particle.vs+gpu_particle.fs"))
 			.set_camera(state.player)
 			["u_sprite_sheet"].texture(assets.tex(pb_kvp.first + ".png"))
+			// // ["u_uv_offset"].vec2(uv_offsets[i])//, CAP)
+			// ["u_frame_dims"].vec2(vec<2>{1, 1})//get_sprite(pb_kvp.first).frame_dims)
 			// ["u_uv_offset"].vec2(uv_offsets[i])//, CAP)
 			["u_frame_dims"].vec2(get_sprite(pb_kvp.first).frame_dims)
 			["u_x0"].texture(pb_kvp.second->x[0].color)
 			["u_x1"].texture(pb_kvp.second->x[1].color)
 		    .draw<GL_TRIANGLES>();
+		    if (pb_kvp.first == "smoke") { glDepthMask(GL_TRUE); }
 		}
 
 /*
 		state.gibs.draw(assets.shader("particle.vs+particle.fs"), assets.tex("particles.png"), state.player, state.time);
 		state.chunks.draw(assets.shader("particle.vs+particle.fs"), assets.tex("chunks.png"), state.player, state.time);
 */
-		// // glDisable(GL_DEPTH_TEST);
+		// glDisable(GL_DEPTH_TEST);
 		// ps_mesh->mesh.using_shader(assets.shader("gpu_particle.vs+gpu_particle.fs"))
 		// .set_camera(state.player)
 		// ["u_sprite_sheet"].texture(assets.tex("particles.png"))
@@ -406,11 +415,11 @@ struct renderer
 		// ["u_x0"].texture(ps->x[0].color)
 		// ["u_x1"].texture(ps->x[1].color)
 	 //    .draw<GL_TRIANGLES>();
-		// // glEnable(GL_DEPTH_TEST);
+		// glEnable(GL_DEPTH_TEST);
 
-		glDepthMask(GL_FALSE);
-		//state.smoke.draw(assets.shader("particle.vs+particle.fs"), assets.tex("smoke.png"), state.player, state.time);
-		glDepthMask(GL_TRUE);
+		// glDepthMask(GL_FALSE);
+		// //state.smoke.draw(assets.shader("particle.vs+particle.fs"), assets.tex("smoke.png"), state.player, state.time);
+		// glDepthMask(GL_TRUE);
 
 		if (!state.onboarding_done)
 		{draw_onboarding(assets, state);}
@@ -465,7 +474,7 @@ struct renderer
 	        wave_text.text(wave_msg, state.player)
 	        ["u_view"].mat4(mat4::I())
 	        ["u_proj"].mat4(state.player.projection())
-	        .draw<GL_TRIANGLES>();        	
+	        .draw<GL_TRIANGLES>();
         }
 
         auto reticle = root.child({0.05, 0.05}, {0, 0, -1});
@@ -475,24 +484,24 @@ struct renderer
         ["u_texture"].texture(assets.tex(gun_reticles[state.player.selected_weapon]))
         ["u_border_thickness"].flt(0)
         .draw_tri_fan();
-/*
-		auto x0 = root.child({ 0.2, 0.2 }, { -0.5, 0, -1 });
-		x0.using_shader()
-			["u_view"].mat4(mat4::I())
-			["u_proj"].mat4(state.player.projection())
-			["u_texture"].texture(ps->x[0].color)
-			//["u_color"].vec4({0, 0, 0, 1})
-			["u_border_thickness"].flt(0.1)
-			.draw_tri_fan();
 
-		auto x1 = root.child({ 0.2, 0.2 }, { -1, 0, -1 });
-		x1.using_shader()
-			["u_view"].mat4(mat4::I())
-			["u_proj"].mat4(state.player.projection())
-			["u_texture"].texture(ps->x[1].color)
-			["u_border_thickness"].flt(0.1)
-			.draw_tri_fan();
-*/
+		// auto x0 = root.child({ 0.2, 0.2 }, { -0.5, 0, -1 });
+		// x0.using_shader()
+		// 	["u_view"].mat4(mat4::I())
+		// 	["u_proj"].mat4(state.player.projection())
+		// 	["u_texture"].texture(ps->x[0].color)
+		// 	//["u_color"].vec4({0, 0, 0, 1})
+		// 	["u_border_thickness"].flt(0.1)
+		// 	.draw_tri_fan();
+
+		// auto x1 = root.child({ 0.2, 0.2 }, { -1, 0, -1 });
+		// x1.using_shader()
+		// 	["u_view"].mat4(mat4::I())
+		// 	["u_proj"].mat4(state.player.projection())
+		// 	["u_texture"].texture(ps->x[1].color)
+		// 	["u_border_thickness"].flt(0.1)
+		// 	.draw_tri_fan();
+
         auto gun_ui = root.child(vec<2>{0.3, 0.1} * 1.1f, {1.5, -1.5f, -1});
         // gun_ui.using_shader()
         // ["u_view"].mat4(mat4::I())

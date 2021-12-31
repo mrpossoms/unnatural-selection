@@ -5,13 +5,13 @@
 namespace us
 {
 
-static void spawn_particle(std::vector<vec<16>>& queue, 
-						   float life, const vec<3>& position, float scale, float alpha, float frame_offset,
-						   const vec<3>& velocity, float dscale, float dalpha)
+static void spawn_particle(std::vector<vec<16>>& queue,
+						   float life, const vec<3>& position, float scale, float alpha, float frame_offset, float rotation,
+						   const vec<3>& velocity, float dscale, float dalpha, float drotation)
 {
 	queue.push_back({
-		life, position[0], position[1], position[2], scale,  alpha,  frame_offset, 0,
-		-1,   velocity[0], velocity[1], velocity[2], dscale, dalpha, 0,            0
+		life, position[0], position[1], position[2], scale,  alpha,  frame_offset, rotation,
+		-1,   velocity[0], velocity[1], velocity[2], dscale, dalpha, 0,            drotation
 	});
 }
 
@@ -27,10 +27,12 @@ static void update_projectiles(us::state& state, float dt)
 
 	    if (hit_level)
 	    {
-			state.particle_spawn_queue.push_back(
-				vec<12>{10, new_pos[0], new_pos[1], new_pos[2], 0.0, 0.75,
-					    -1, 0, 0.05, 0, 0.2, -0.01}
-			);
+	    	// spawn_particle(state.particle_spawn_queue, 10, new_pos, 1, 0.5, 0, {0, 0.0, 0}, 0.1, -0.01);
+
+			// state.particle_spawn_queue.push_back(
+			// 	vec<16>{10, new_pos[0], new_pos[1], new_pos[2], 0.0, 0.75, 0, 0
+			// 		    -1, 0, 0.05, 0, 0.2, -0.01, 0, 0}
+			// );
 			// state.particle_spawn_queue.push_back(
 			// 	vec<6>{new_pos[0], new_pos[1], new_pos[2],0, 1, 0}
 			// );
@@ -52,7 +54,7 @@ static void update_projectiles(us::state& state, float dt)
 		for (unsigned j = 0; j < state.baddies.size(); j++)
 		{
 			auto& baddie = state.baddies[j];
-			
+
 			if (baddie.hp <= 0) { continue; }
 
 			auto t = intersect::ray_sphere(projectile.position, projectile.velocity, baddie.position, 0.5f);
@@ -67,8 +69,8 @@ static void update_projectiles(us::state& state, float dt)
 				{
 					spawn_particle(
 						state.particle_queue["chunks"],
-						10, baddie.position, 0.5f, 1, (rand() % 11)/11.f,
-						vec<3>{randf(), randf(), randf()} * 4, -0.125f, 0
+						10, baddie.position, 0.25f, 1, rand() % 7 / 7.f, randf(),
+						vec<3>{randf(), randf(), randf()} * 4, 0, 0, randf() * 5
 					);
 				}
 				//state.chunks.spawn(baddie.position, 0.5f, 1, vec<3>{randf(), randf(), randf()} * 4, -0.125f, 0, state.time, state.time + 10, {(rand() % 11)/11.f});
@@ -81,10 +83,20 @@ static void update_projectiles(us::state& state, float dt)
 				{
 					for (unsigned i = 6; i--;)
 					{
-						//state.gibs.spawn(baddie.position, 1, 1, vec<3>{randf(), randf(), randf()} * 4, 0, 0, state.time, state.time + 10, {(rand() % 11)/11.f});
+						// state.gibs.spawn(baddie.position, 1, 1, vec<3>{randf(), randf(), randf()} * 4, 0, 0, state.time, state.time + 10, {(rand() % 11)/11.f});
+						// spawn_particle(
+						// 	state.particle_queue["gibs"],
+						// 	10, baddie.position, 1, 1, (rand() % 11)/11.f,
+						// 	vec<3>{randf(), randf(), randf()} * 4, 0, 0
+						// );
 					}
 
 					//state.smoke.spawn(baddie.position, 1, 0.5f, vec<3>{randf(), randf(), randf()} * 0.25f, 1.f, -0.05f, state.time, state.time + 10, {});
+					spawn_particle(
+						state.particle_queue["smoke"],
+						10, baddie.position, 1, 0.25f, (rand() % 5) / 5.0f, randf(),
+						vec<3>{randf(), randf(), randf()} * 0.25f, 1.f, -0.05f, 0
+					);
 				}
 
 				break;
@@ -167,14 +179,14 @@ static void update_baddies(us::state& state, float dt)
 		baddie.position = new_pos;
 		baddie.velocity *= 0.9f;
 		// projectile.life -= dt;
-	}	
+	}
 }
 
 void update_player(us::state& state, float dt)
 {
 	auto& player = state.player;
 	auto new_pos = player.position + player.velocity * dt;
-	
+
 	player.is_sprinting = false;
 
  	vec<2> dir = {};
@@ -240,7 +252,7 @@ void update_player(us::state& state, float dt)
 
 	if (state.level->get_cell(new_pos + vec<3>{0.5f, 0.5f, 0.5f}).is_floor)
 	{
-		player.position = new_pos;	
+		player.position = new_pos;
 	}
 
 	player.cool_down = std::max<float>(0, player.cool_down - dt);
