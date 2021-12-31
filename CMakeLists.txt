@@ -50,6 +50,7 @@ include_directories(${PROJECT_NAME} PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/gitman_s
 # include_directories(${PROJECT_NAME} PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/gitman_sources/g.h/gitman_sources/opengametools/src)
 # include_directories(${PROJECT_NAME} PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/gitman_sources/g.h/gitman_sources/xmath.h/inc)
 
+add_subdirectory(gitman_sources/g.h)
 # MINGW
 # find_package(GLUT REQUIRED)
 
@@ -64,8 +65,6 @@ endif()
 find_package(OpenAL REQUIRED)
 
 add_executable(${PROJECT_NAME} ${SOURCE})
-
-add_subdirectory(gitman_sources/g.h)
 
 target_link_libraries(${PROJECT_NAME} g)
 target_link_libraries(${PROJECT_NAME} glfw)
