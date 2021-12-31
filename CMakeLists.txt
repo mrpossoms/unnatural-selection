@@ -55,7 +55,8 @@ include_directories(${PROJECT_NAME} PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/gitman_s
 
 if(CMAKE_CXX_COMPILER_ID STREQUAL "Emscripten")
 # NOP
-set(CMAKE_EXE_LINKER_FLAGS "-s USE_GLFW=3 -s FULL_ES3=1 -s ALLOW_MEMORY_GROWTH=1")
+set(CMAKE_EXE_LINKER_FLAGS "-s USE_GLFW=3 -s FULL_ES3=1 -s ALLOW_MEMORY_GROWTH=1 --preload-file ../data --shell-file ../shell.html")
+set(CMAKE_EXECUTABLE_SUFFIX ".html")
 else()
 # find_package(OpenGL REQUIRED)
 endif()
@@ -78,7 +79,7 @@ set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} /MT")
 set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} /MTd")
 set(CMAKE_C_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} /MT")
 set(CMAKE_C_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} /MTd")
-  
+
 message(STATUS ">>> Will copy data directory")
 add_custom_command(TARGET ${PROJECT_NAME} PRE_BUILD
                    COMMAND cmake -E copy_directory
